@@ -1,34 +1,34 @@
 const router = require('express').Router();
-const customerRepository = require('../repository/customerRepository');
-const Customer = require('../static/classes/customer');
-const validateReqBody = require('../static/validation/validateCustomer');
+const supplierRepository = require('../repository/supplierRepository');
+const Supplier = require('../static/classes/supplier');
+const validateReqBody = require('../static/validation/validateSupplier');
 
 router.get('/search', async(req,res)=>{
     try {
         const {pattern}  = req.query;
-        const {count,error ,result} = await customerRepository.getSearchResult(pattern);
+        const {count,error ,result} = await supplierRepository.getSearchResult(pattern);
 
         if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Customer not found.",'/',{count,result}));
+            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"supplier not found.",'/',{count,result}));
         }
 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer fetched successfully.",'/',{count,result}));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"supplier fetched successfully.",'/',{count,result}));
     
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));       
     }    
 })
 
-router.get('/findcustomerwithname', async(req,res)=>{
+router.get('/findsupplierwithname', async(req,res)=>{
     try {
         const {pattern}  = req.query;
-        const {count,error ,result} = await customerRepository.getCustomersOnRegex(pattern);
+        const {count,error ,result} = await supplierRepository.getsuppliersOnRegex(pattern);
 
         if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Customer not found.",'/',{count,result}));
+            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"supplier not found.",'/',{count,result}));
         }
 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer fetched successfully.",'/',{count,result}));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"supplier fetched successfully.",'/',{count,result}));
     
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));       
@@ -37,13 +37,13 @@ router.get('/findcustomerwithname', async(req,res)=>{
 
 router.get('/creditamount', async(req,res)=>{
     try {
-        const {count,error ,result} = await customerRepository.getCustomersHavingCredit();
+        const {count,error ,result} = await supplierRepository.getsuppliersHavingCredit();
 
         if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Customer not found.",'/',{count,result}));
+            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"supplier not found.",'/',{count,result}));
         }
 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer fetched successfully.",'/',{count,result}));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"supplier fetched successfully.",'/',{count,result}));
     
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));       
@@ -54,12 +54,12 @@ router.get('/creditamount', async(req,res)=>{
 
 router.get('/',async (req,res)=>{
     try {
-        const {count, error, result}= customerRepository.getAllCustomer();
+        const {count, error, result}= supplierRepository.getAllsupplier();
         if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Customer not found.",'/',{count,result}));
+            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"supplier not found.",'/',{count,result}));
         }
 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer fetched successfully.",'/',{count,result}));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"supplier fetched successfully.",'/',{count,result}));
     
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/')); 
@@ -69,31 +69,31 @@ router.get('/',async (req,res)=>{
 router.get('/:id',async (req,res)=>{
     try {
         const {id} = req.params; 
-        const {count,error,result} = await customerRepository.getSingleCustomer(id);
+        const {count,error,result} = await supplierRepository.getSinglesupplier(id);
         if(!count){
             return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Purchase order not found.",'/',result));
         }
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer fetched successfully.",'/',result));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"supplier fetched successfully.",'/',result));
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
     }
 });
 
-router.post('/addcustomer',async (req,res)=>{
+router.post('/addsupplier',async (req,res)=>{
     try {
         const {
-            customerName,
-            customerContactNo,
-            customerAddress,
+            supplierName,
+            supplierContactNo,
+            supplierAddress,
             lastPurchaseDate,
             totalCreditAmount,
             __v} = req.body;
 
             
-        const customer = new Customer(
-            customerName,
-            customerContactNo,
-            customerAddress,
+        const supplier = new Supplier(
+            supplierName,
+            supplierContactNo,
+            supplierAddress,
             lastPurchaseDate,
             totalCreditAmount,
             __v 
@@ -101,7 +101,7 @@ router.post('/addcustomer',async (req,res)=>{
         
 
         // Validate request body 
-        const {error,value,warning} = validateReqBody(customer);
+        const {error,value,warning} = validateReqBody(supplier);
         
         // If there is error in request body, then it will throw BAD request 
         if(error){
@@ -109,7 +109,7 @@ router.post('/addcustomer',async (req,res)=>{
         }
 
         //otherwise purchase order Repository is invoked.
-        const customerObject = await customerRepository.createCustomer(customer);
+        const supplierObject = await supplierRepository.createsupplier(supplier);
 
         
         // If there is error in request body, then it will throw BAD request 
@@ -118,29 +118,29 @@ router.post('/addcustomer',async (req,res)=>{
         }
 
         // Successful response 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer added successfully.",'/',customerObject));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"supplier added successfully.",'/',supplierObject));
 
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
     }
 });
 
-router.put('/updatecustomer/:id',async (req,res)=>{
+router.put('/updatesupplier/:id',async (req,res)=>{
     try {
         const {id} = req.params;
         const {
-            customerName,
-            customerContactNo,
-            customerAddress,
+            supplierName,
+            supplierContactNo,
+            supplierAddress,
             lastPurchaseDate,
             totalCreditAmount,
             __v} = req.body;
 
             
-        const customer = new Customer(
-            customerName,
-            customerContactNo,
-            customerAddress,
+        const supplier = new Supplier(
+            supplierName,
+            supplierContactNo,
+            supplierAddress,
             lastPurchaseDate,
             totalCreditAmount,
             __v 
@@ -148,31 +148,31 @@ router.put('/updatecustomer/:id',async (req,res)=>{
         
         
         // Validate request body 
-        const {error,value,warning} = validateReqBody(customer);
+        const {error,value,warning} = validateReqBody(supplier);
         
         // If there is error in request body, then it will throw BAD request 
         if(error){
             return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,error.message));
         }
 
-        customer.__v += 1; 
+        supplier.__v += 1; 
 
         //otherwise purchase order Repository is invoked.
-        const customerObject = await customerRepository.updateCustomer(id,customer);
+        const supplierObject = await supplierRepository.updatesupplier(id,supplier);
 
         //Successful response
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer updated successfully.",'/',customerObject));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"supplier updated successfully.",'/',supplierObject));
 
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
     }
 });
 
-router.delete('/deletecustomer/:id',async (req,res)=>{
+router.delete('/deletesupplier/:id',async (req,res)=>{
     try {
         const {id} = req.params; 
-        const customer = await customerRepository.deleteCustomer(id);
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer deleted successfully.",'/',customer));
+        const supplier = await supplierRepository.deletesupplier(id);
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"supplier deleted successfully.",'/',supplier));
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
     }

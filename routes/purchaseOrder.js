@@ -3,9 +3,12 @@ const purchaseOrderRepository = require('../repository/purchaseOrderRepository')
 const PurchaseOrder = require('../static/classes/purchaseOrder');
 const validateReqBody = require('../static/validation/validatePurchaseOrder');
 
+
 router.get('/',async (req,res)=>{
     try {
-        const {count, error, result}= purchaseOrderRepository.getAllPurchaseOrder();
+        const {startDate,endDate} = req.query;
+
+        const {count, error, result}= await purchaseOrderRepository.getAllPurchaseOrder(startDate,endDate);
         if(!count){
             return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Purchase order not found.",'/',{count,result}));
         }
@@ -82,7 +85,7 @@ router.post('/addpurchaseorder',async (req,res)=>{
     }
 });
 
-router.update('/updatepurchaseorder/:id',async (req,res)=>{
+router.put('/updatepurchaseorder/:id',async (req,res)=>{
     try {
         const {id} = req.params;
         const {
