@@ -3,14 +3,63 @@ const customerRepository = require('../repository/customerRepository');
 const Customer = require('../static/classes/customer');
 const validateReqBody = require('../static/validation/validateCustomer');
 
+router.get('/search', async(req,res)=>{
+    try {
+        const {pattern}  = req.query;
+        const {count,error ,result} = await customerRepository.getSearchResult(pattern);
+
+        if(!count){
+            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Customer not found.",'/',{count,result}));
+        }
+
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer fetched successfully.",'/',{count,result}));
+    
+    } catch (error) {
+        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));       
+    }    
+})
+
+router.get('/findcustomerwithname', async(req,res)=>{
+    try {
+        const {pattern}  = req.query;
+        const {count,error ,result} = await customerRepository.getCustomersOnRegex(pattern);
+
+        if(!count){
+            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Customer not found.",'/',{count,result}));
+        }
+
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer fetched successfully.",'/',{count,result}));
+    
+    } catch (error) {
+        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));       
+    }      
+})
+
+router.get('/creditamount', async(req,res)=>{
+    try {
+        const {count,error ,result} = await customerRepository.getCustomersHavingCredit();
+
+        if(!count){
+            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Customer not found.",'/',{count,result}));
+        }
+
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer fetched successfully.",'/',{count,result}));
+    
+    } catch (error) {
+        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));       
+    }      
+})
+
+
+
 router.get('/',async (req,res)=>{
     try {
         const {count, error, result}= customerRepository.getAllCustomer();
         if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Purchase order not found.",'/',{count,result}));
+            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Customer not found.",'/',{count,result}));
         }
 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order fetched successfully.",'/',{count,result}));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer fetched successfully.",'/',{count,result}));
     
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/')); 
@@ -24,7 +73,7 @@ router.get('/:id',async (req,res)=>{
         if(!count){
             return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Purchase order not found.",'/',result));
         }
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order fetched successfully.",'/',result));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer fetched successfully.",'/',result));
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
     }
@@ -69,7 +118,7 @@ router.post('/addcustomer',async (req,res)=>{
         }
 
         // Successful response 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order added successfully.",'/',customerObject));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer added successfully.",'/',customerObject));
 
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
@@ -112,7 +161,7 @@ router.update('/updatecustomer/:id',async (req,res)=>{
         const customerObject = await customerRepository.updateCustomer(id,customer);
 
         //Successful response
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order updated successfully.",'/',customerObject));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer updated successfully.",'/',customerObject));
 
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
@@ -123,7 +172,7 @@ router.delete('/deletecustomer/:id',async (req,res)=>{
     try {
         const {id} = req.params; 
         const customer = await customerRepository.deleteCustomer(id);
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order deleted successfully.",'/',customer));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer deleted successfully.",'/',customer));
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
     }
