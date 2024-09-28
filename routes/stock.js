@@ -63,9 +63,9 @@ router.get('/findproductwithname',async(req,res)=>{
 
 router.get('/', async(req,res)=>{
     try {
-        const {sortByField,sortByValue,filterByField,filterByValue} = req.query;
+        const {sortByField,sortByValue,filterObject,page} = req.query;
         console.log(req.query)
-        const {count,error, result} = await productRepository.getAllProducts(sortByField,sortByValue,filterByField,filterByValue);
+        const {count,error, result} = await productRepository.getAllProducts(sortByField,sortByValue,filterObject,page);
         if(!count){
             return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Product not found.",'/',{count,result}));
         }
