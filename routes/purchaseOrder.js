@@ -1,7 +1,25 @@
 const router = require('express').Router();
 const purchaseOrderRepository = require('../repository/purchaseOrderRepository');
+const supplierRepository = require('../repository/supplierRepository');
 const PurchaseOrder = require('../static/classes/purchaseOrder');
 const validateReqBody = require('../static/validation/validatePurchaseOrder');
+
+router.get('/supplier/:id', async(req,res)=>{
+    try {
+        const {id} = req.params;
+        const {sortValue,page} = req.query;
+
+        const {count, error, result}= await purchaseOrderRepository.getPurchaseOrderBasedOnSupplierId(id,sortValue,page);
+        if(!count){
+            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Purchase order not found.",'/',{count,result}));
+        }
+
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order fetched successfully.",'/',{count,result}));
+    
+    } catch (error) {
+        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/')); 
+    }
+})
 
 
 router.get('/',async (req,res)=>{
@@ -58,16 +76,26 @@ router.post('/addpurchaseorder',async (req,res)=>{
             dueDate,
             __v 
         );
-        
 
+
+        
+        
         // Validate request body 
         const {error,value,warning} = validateReqBody(purchaseOrder);
         
+
         // If there is error in request body, then it will throw BAD request 
         if(error){
             return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,error.message));
         }
 
+        if(supplierId != "dummuy"){
+            const supplierSideValidation = await supplierRepository.getSingleSupplier(supplierId);
+
+            if(!supplierSideValidation){
+                return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,"suuplier id invalid"));
+            }
+        }
         //otherwise purchase order Repository is invoked.
         const purchaseOrderObject = await purchaseOrderRepository.createPurchaseOrder(purchaseOrder);
 
@@ -117,6 +145,14 @@ router.put('/updatepurchaseorder/:id',async (req,res)=>{
         // If there is error in request body, then it will throw BAD request 
         if(error){
             return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,error.message));
+        }
+
+        if(supplierId != "dummuy"){
+            const supplierSideValidation = await supplierRepository.getSingleSupplier(supplierId);
+
+            if(!supplierSideValidation){
+                return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,"suuplier id invalid"));
+            }
         }
 
         purchaseOrder.__v += 1; 

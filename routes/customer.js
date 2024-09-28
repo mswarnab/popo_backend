@@ -118,7 +118,7 @@ router.post('/addcustomer',async (req,res)=>{
         }
 
         // Successful response 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer added successfully.",'/',customerObject));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer created successfully.",'/',customerObject));
 
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
@@ -159,6 +159,10 @@ router.put('/updatecustomer/:id',async (req,res)=>{
 
         //otherwise purchase order Repository is invoked.
         const customerObject = await customerRepository.updateCustomer(id,customer);
+
+        if(!customerObject){
+            return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,'Something went wrong'));
+        }
 
         //Successful response
         return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Customer updated successfully.",'/',customerObject));

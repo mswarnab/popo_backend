@@ -28,12 +28,14 @@ const getSingleCustomer = async (id)=>{
     }
 }
 
-const getAllCustomer = async()=>{
+const getAllCustomer = async(page)=>{
     try {
         const count = await Customer.find()
                                     .countDocuments();
 
         const result = await Customer.find()
+                                    .sort({lastPurchaseDate: -1})
+                                    .skip(20*parseInt(page))
                                     .limit(20);
         return {count,result};
     } catch (error) {
@@ -82,7 +84,7 @@ const getCustomersOnRegex = async(regex)=>{
     }
 }
 
-const getCustomersHavingCredit = async()=>{
+const getCustomersHavingCredit = async(page)=>{
     try {
         const count = await Customer.find()
                                     .where("totalCreditAmount")
@@ -92,6 +94,7 @@ const getCustomersHavingCredit = async()=>{
                                     .where("totalCreditAmount")
                                     .gt(0)
                                     .sort({totalCreditAmount:1})
+                                    .skip(20* parseInt(page))
                                     .limit(20);
         return {count,result};
     } catch (error) {

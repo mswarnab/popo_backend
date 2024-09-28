@@ -6,6 +6,7 @@ const ResponseObject = require('../static/classes/ResponseObject');
 const ErrorObject = require('../static/classes/errorObject');
 const Product = require('../static/classes/product');
 const validateReqBody = require('../static/validation/validateProduct');
+const app = require('../appExpress');
 
 router.get('/getexpiredproducts',async(req,res)=>{
     
@@ -68,6 +69,7 @@ router.get('/', async(req,res)=>{
         if(!count){
             return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Product not found.",'/',{count,result}));
         }
+        app.emit("demo",result);
         return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Product fetched successfully.",'/',{count,result}));
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));

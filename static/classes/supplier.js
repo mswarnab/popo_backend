@@ -1,5 +1,5 @@
 class Supplier{
-    constructor(id,name,mobileNo,supplierEmail,supplierAddress,lastPurchaseDate,totalCreditAmount){
+    constructor(id,name,mobileNo,supplierEmail,supplierAddress,lastPurchaseDate,totalCreditAmount,__V){
         this._id=id.trim();
         this.supplierName = name.trim();
         this.supplierContactNo = mobileNo.trim();
@@ -7,6 +7,7 @@ class Supplier{
         this.supplierAddress=supplierAddress.trim();
         this.lastPurchaseDate=lastPurchaseDate.trim();
         this.totalCreditAmount=totalCreditAmount.trim();
+        this.__V = __V.trim();
     }
 }
 

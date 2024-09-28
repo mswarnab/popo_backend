@@ -27,15 +27,62 @@ const getSingleSale = async (id)=>{
     }
 }
 
-const getAllSale = async()=>{
+const getAllSale = async(page,sortBy="dateOfSale",sortValue=-1,filterObj={totalAmount: {$gt:0}})=>{
     try {
-        return await Sale.find()
-            .limit(20);
+        const count = await Sale.find(filterObj)
+                                .sort({[sortBy]:sortValue})
+                                .countDocuments();
+
+        const result = await Sale.find(filterObj)
+                                .sort({[sortBy]:sortValue})
+                                .skip(20*parseInt(page))
+                                .limit(20);
+        return {count,result};
+            
     } catch (error) {
         return {errorStatus:true,error}
     }
 }
 
+const getTotalSaleOfCustomers = async(id,page,filterDue)=>{
+    try {
+        if(filterDue){
+            const count = await Sale.find()
+                                    .where("customerId")
+                                    .equals(id)
+                                    .where("cerditAmount")
+                                    .equals(0)
+                                    .sortBy({dateOfSale: -1})
+                                    .countDocuments();
+            const result = await Sale.find()
+                                    .where("customerId")
+                                    .equals(id)
+                                    .where("cerditAmount")
+                                    .equals(0)
+                                    .skip(20*parseInt(page))
+                                    .sortBy({dateOfSale: -1})                                   
+                                    .countDocuments();  
+            return {count, result};
+        }
+
+
+        const count = await Sale.find()
+                                .where("customerId")
+                                .equals(id)
+                                .sortBy({dateOfSale: -1})
+                                .countDocuments();
+        const result = await Sale.find()
+                                .where("customerId")
+                                .equals(id)
+                                .skip(20*parseInt(page))
+                                .sortBy({dateOfSale: -1})                                   
+                                .countDocuments();  
+        return {count, result};
+          
+    } catch (error) {
+        return {errorStatus:true,error}        
+    }
+}
 
 const deleteSale = async (id)=>{
     try {
@@ -45,4 +92,23 @@ const deleteSale = async (id)=>{
     }
 }
 
-module.exports = {getAllSale,getSingleSale, createSale,updateSale,deleteSale};
+const getSaleBasedOnCustomerId = async (page,id)=>{
+    try {
+        const count = await Sale.find()
+                                .where("customerId")
+                                .equals(id)
+                                .countDocuments();
+        const result = await Sale.find()
+                                .where("customerId")
+                                .equals(id)
+                                .sort({dateOfSale: -1})
+                                .skip(20 * parseInt(page))
+                                .limit(20);     
+        return {result,count};                       
+    } catch (error) {
+        
+    }
+
+}
+
+module.exports = {getAllSale,getSingleSale, createSale,updateSale,deleteSale,getTotalSaleOfCustomers,getSaleBasedOnCustomerId};

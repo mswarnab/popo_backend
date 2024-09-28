@@ -27,6 +27,27 @@ const getSinglePurchaseOrder = async (id)=>{
     }
 }
 
+const getPurchaseOrderBasedOnSupplierId = async (supplierId,sortValue,page)=>{
+    try {
+        const count = await PurchaseOrder.find()
+                                        .where("supplierId")
+                                        .equals(supplierId)
+                                        .countDocuments();
+        const result = await PurchaseOrder.find()
+                                        .where("supplierId")
+                                        .equals(supplierId)
+                                        .sort({dateOfPruchase: sortValue})
+                                        .skip(20*page)
+                                        .limit(20);
+        return {count,result};
+
+    } catch (error) {
+        return {errorStatus:true,error}
+       
+    }
+}
+
+
 // const getSortedPurchasedOrderBasedOnDateOfPurchase = async()=>{
 //     try {
 //         const count = await PurchaseOrder.find()
@@ -102,4 +123,4 @@ const deletePurchaseOrder = async (id)=>{
     }
 }
 
-module.exports = {getAllPurchaseOrder,getSinglePurchaseOrder, createPurchaseOrder,updatePurchaseOrder,deletePurchaseOrder};
+module.exports = {getAllPurchaseOrder,getSinglePurchaseOrder, createPurchaseOrder,updatePurchaseOrder,deletePurchaseOrder,getPurchaseOrderBasedOnSupplierId};

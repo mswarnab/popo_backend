@@ -1,8 +1,8 @@
 const Supplier = require('./schema/product')
 
-const createSupplier = async (SupplierObject)=>{
+const createSupplier = async (supplierObject)=>{
     try {
-        const supplier = new Supplier(SupplierObject);  
+        const supplier = new Supplier(supplierObject);  
         await supplier.save();
     } catch (error) {
         return {errorStatus:true,error}
@@ -10,9 +10,9 @@ const createSupplier = async (SupplierObject)=>{
 
 }
 
-const updateSupplier = async (SupplierObject)=>{
+const updateSupplier = async (supplierObject)=>{
     try {
-        return await Supplier.findByIdAndUpdate(SupplierObject._id, SupplierObject)
+        return await Supplier.findByIdAndUpdate(supplierObject._id, supplierObject)
     } catch (error) {
         return {errorStatus:true,error}
     }
@@ -21,7 +21,8 @@ const updateSupplier = async (SupplierObject)=>{
 
 const getSingleSupplier = async (id)=>{
     try {
-        return await Supplier.findById(id)
+        const result = await Supplier.findById(id);
+       return {count:result,result};
     } catch (error) {
         return {errorStatus:true,error}
     }
@@ -29,10 +30,16 @@ const getSingleSupplier = async (id)=>{
 
 const getAllSupplier = async()=>{
     try {
-        return await Supplier.find()
-            .limit(20);
+        const count = await Supplier.find()                           
+                                    .countDocuments();
+
+        const result = await Supplier.find()
+                                    .sort({lastPurchaseDate: -1})
+                                    .limit(20);
+        return {count,result};
     } catch (error) {
         return {errorStatus:true,error}
+                    
     }
 }
 
@@ -45,4 +52,53 @@ const deleteSupplier = async (id)=>{
     }
 }
 
-module.exports = {getAllSupplier,getSingleSupplier, createSupplier,updateSupplier,deleteSupplier};
+const getSearchResult = async (regex)=>{
+    try {
+        const result = await Supplier.find()
+                                    .select("supplierName")
+                                    .distinct()
+                                    .where("supplierName")
+                                    .regex(regex)
+                                    .limit(10)
+        return {count:10,result};
+    } catch (error) {
+        return {errorStatus:true,error}
+    }
+}
+
+const getSuppliersOnRegex = async(regex)=>{
+    try {
+        const count = await Supplier.find()
+                                    .where("supplierName")
+                                    .regex(regex)
+                                    .countDocuments();
+
+        const result = await Supplier.find()
+                                    .where("supplierName")
+                                    .regex(regex)
+                                    .countDocuments();
+        return {count,result};
+    } catch (error) {
+        return {errorStatus:true,error}       
+    }
+}
+
+const getSuppliersHavingCredit = async()=>{
+    try {
+        const count = await Supplier.find()
+                                    .where("totalCreditAmount")
+                                    .gt(0)
+                                    .countDocuments();
+        const result = await Supplier.find()
+                                    .where("totalCreditAmount")
+                                    .gt(0)
+                                    .sort({totalCreditAmount:-1})
+                                    .limit(20);
+        return {count,result};
+    } catch (error) {
+        return {errorStatus:true,error}       
+    }
+}
+
+
+module.exports = {getAllSupplier,getSingleSupplier, createSupplier,updateSupplier,deleteSupplier,getSearchResult,getSuppliersOnRegex,getSuppliersHavingCredit};

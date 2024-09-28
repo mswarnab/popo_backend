@@ -22,7 +22,7 @@ router.get('/search', async(req,res)=>{
 router.get('/findsupplierwithname', async(req,res)=>{
     try {
         const {pattern}  = req.query;
-        const {count,error ,result} = await supplierRepository.getsuppliersOnRegex(pattern);
+        const {count,error ,result} = await supplierRepository.getSuppliersOnRegex(pattern);
 
         if(!count){
             return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"supplier not found.",'/',{count,result}));
@@ -37,7 +37,7 @@ router.get('/findsupplierwithname', async(req,res)=>{
 
 router.get('/creditamount', async(req,res)=>{
     try {
-        const {count,error ,result} = await supplierRepository.getsuppliersHavingCredit();
+        const {count,error ,result} = await supplierRepository.getSuppliersHavingCredit();
 
         if(!count){
             return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"supplier not found.",'/',{count,result}));
@@ -54,7 +54,7 @@ router.get('/creditamount', async(req,res)=>{
 
 router.get('/',async (req,res)=>{
     try {
-        const {count, error, result}= supplierRepository.getAllsupplier();
+        const {count, error, result}= supplierRepository.getAllSupplier();
         if(!count){
             return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"supplier not found.",'/',{count,result}));
         }
@@ -69,11 +69,11 @@ router.get('/',async (req,res)=>{
 router.get('/:id',async (req,res)=>{
     try {
         const {id} = req.params; 
-        const {count,error,result} = await supplierRepository.getSinglesupplier(id);
+        const {count,error,result} = await supplierRepository.getSingleSupplier(id);
         if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Purchase order not found.",'/',result));
+            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Supplier not found.",'/',result));
         }
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"supplier fetched successfully.",'/',result));
+        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Supplier fetched successfully.",'/',result));
     } catch (error) {
         return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
     }
@@ -84,6 +84,7 @@ router.post('/addsupplier',async (req,res)=>{
         const {
             supplierName,
             supplierContactNo,
+            supplierEmail,
             supplierAddress,
             lastPurchaseDate,
             totalCreditAmount,
@@ -93,6 +94,7 @@ router.post('/addsupplier',async (req,res)=>{
         const supplier = new Supplier(
             supplierName,
             supplierContactNo,
+            supplierEmail,
             supplierAddress,
             lastPurchaseDate,
             totalCreditAmount,
@@ -112,11 +114,6 @@ router.post('/addsupplier',async (req,res)=>{
         const supplierObject = await supplierRepository.createsupplier(supplier);
 
         
-        // If there is error in request body, then it will throw BAD request 
-        if(error){
-            return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,error.message));
-        }
-
         // Successful response 
         return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"supplier added successfully.",'/',supplierObject));
 
@@ -131,6 +128,7 @@ router.put('/updatesupplier/:id',async (req,res)=>{
         const {
             supplierName,
             supplierContactNo,
+            supplierEmail,
             supplierAddress,
             lastPurchaseDate,
             totalCreditAmount,
@@ -140,6 +138,7 @@ router.put('/updatesupplier/:id',async (req,res)=>{
         const supplier = new Supplier(
             supplierName,
             supplierContactNo,
+            supplierEmail,
             supplierAddress,
             lastPurchaseDate,
             totalCreditAmount,
@@ -158,7 +157,7 @@ router.put('/updatesupplier/:id',async (req,res)=>{
         supplier.__v += 1; 
 
         //otherwise purchase order Repository is invoked.
-        const supplierObject = await supplierRepository.updatesupplier(id,supplier);
+        const supplierObject = await supplierRepository.updateSupplier(id,supplier);
 
         //Successful response
         return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"supplier updated successfully.",'/',supplierObject));

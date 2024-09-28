@@ -28,58 +28,18 @@ const getSingleProduct = async (id)=>{
     }
 }
 
-const getAllProducts = async(sortByField,sortByValue,filterByField,filterByValue)=>{
+const getAllProducts = async(sortByField,sortByValue,filterObject,page)=>{
     try {
         let count;
         let result;
-        console.log(sortByField)
-        console.log(sortByValue)
-        console.log(filterByField)
-        console.log(filterByValue)
 
-        if(sortByField && filterByField ){
-            count = await Product.find()
-                .sort({[sortByField]:parseInt(sortByValue)})
-                .where(filterByField)
-                .equals(filterByValue)
-                .countDocuments();
-            result = await Product.find()
-                .sort({[sortByField]:parseInt(sortByValue)})
-                .where(filterByField)
-                .equals(filterByValue)        
-                .limit(20);
-            console.log("sort && filter")
-        }
+        count = await Product.find(filterObject)
+                            .countDocuments();
 
-        if(sortByField && !filterByField){
-            count = await Product.find()
-                        .sort({[sortByField]:parseInt(sortByValue)})
-                        .countDocuments();
-            result = await Product.find()
-                        .sort({[sortByField]:parseInt(sortByValue)})       
-                        .limit(20);
-            console.log("sort")
-        }
-
-        if(!sortByField && filterByField){
-            count = await Product.find()
-                        .where(filterByField)
-                        .equals(filterByValue)
-                        .countDocuments();
-            result = await Product.find()
-                        .where(filterByField)
-                        .equals(filterByValue)        
-                        .limit(20); 
-            console.log(" filter")
-        }
-
-        if(!sortByField && !filterByField){
-            count = await Product.find()       
-                                .countDocuments();
-            result = await Product.find()       
-                                .limit(20);
-            console.log("nothing")
-        }
+        result = await Product.find(filterObject)
+                            .sort({[sortByField]:parseInt(sortByValue)}) 
+                            .skip(20* parseInt(page))     
+                            .limit(20);
 
         return {count,result};
 
@@ -114,6 +74,7 @@ const getExpiredProducts = async (category=productCategory,duration=3)=>{
         .where("expDate")
         .lte(notificationDate)
         .sort({expDate:1})
+        .skip(20* parseInt(page))
         .limit(20);
 
         return {count,result};
@@ -137,7 +98,7 @@ const getSearchResult = async (regex)=>{
     }
 }
 
-const getProductsOnRegex = async (regex)=>{
+const getProductsOnRegex = async (regex,page=0)=>{
     try {
         const count =  await Product.find()
                                     .where("productName")
@@ -147,10 +108,61 @@ const getProductsOnRegex = async (regex)=>{
         const result =  await Product.find()
                                     .where("productName")
                                     .regex(regex)
-                                    .limit(10)  
+                                    .skip(20* parseInt(page))
+                                    .limit(20)  
         return {count,result}  
     } catch (error) {
         return {errorStatus:true,error}
     }
 }
 module.exports = {getAllProducts,getSingleProduct, createProduct,updateProduct,deleteProduct,getExpiredProducts,getSearchResult,getProductsOnRegex};
+
+
+
+// if(sortByField && filterByField ){
+//     count = await Product.find()
+//         .sort({[sortByField]:parseInt(sortByValue)})
+//         .where(filterByField)
+//         .equals(filterByValue)
+//         .countDocuments();
+//     result = await Product.find()
+//         .sort({[sortByField]:parseInt(sortByValue)})
+//         .where(filterByField)
+//         .equals(filterByValue)   
+//         .skip(20* parseInt(page))     
+//         .limit(20);
+//     console.log("sort && filter")
+// }
+
+// if(sortByField && !filterByField){
+//     count = await Product.find()
+//                 .sort({[sortByField]:parseInt(sortByValue)})
+//                 .countDocuments();
+//     result = await Product.find()
+//                 .sort({[sortByField]:parseInt(sortByValue)})  
+//                 .skip(20* parseInt(page))     
+//                 .limit(20);
+//     console.log("sort")
+// }
+
+// if(!sortByField && filterByField){
+//     count = await Product.find()
+//                 .where(filterByField)
+//                 .equals(filterByValue)
+//                 .countDocuments();
+//     result = await Product.find()
+//                 .where(filterByField)
+//                 .equals(filterByValue)  
+//                 .skip(20* parseInt(page))      
+//                 .limit(20); 
+//     console.log(" filter")
+// }
+
+// if(!sortByField && !filterByField){
+//     count = await Product.find()       
+//                         .countDocuments();
+//     result = await Product.find()     
+//                         .skip(20* parseInt(page))
+//                         .limit(20);
+//     console.log("nothing")
+// }
