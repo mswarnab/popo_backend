@@ -1,181 +1,557 @@
-const router = require('express').Router();
-const purchaseOrderRepository = require('../repository/purchaseOrderRepository');
-const supplierRepository = require('../repository/supplierRepository');
-const PurchaseOrder = require('../static/classes/purchaseOrder');
-const validateReqBody = require('../static/validation/validatePurchaseOrder');
+const router = require("express").Router();
+const purchaseOrderRepository = require("../repository/purchaseOrderRepository");
+const supplierRepository = require("../repository/supplierRepository");
+const productRepository = require("../repository/productRepository");
 
-router.get('/supplier/:id', async(req,res)=>{
-    try {
-        const {id} = req.params;
-        const {sortValue,page} = req.query;
+const Product = require("../static/classes/product");
+const PurchaseOrder = require("../static/classes/purchaseOrder");
+const ErrorObject = require("../static/classes/errorObject");
+const ResponseObject = require("../static/classes/ResponseObject");
 
-        const {count, error, result}= await purchaseOrderRepository.getPurchaseOrderBasedOnSupplierId(id,sortValue,page);
-        if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Purchase order not found.",'/',{count,result}));
-        }
+const { httpCodes } = require("../static");
+const validateReqBodyProduct = require("../static/validation/validateProduct");
+const validateReqBodyPurchaseOrder = require("../static/validation/validatePurchaseOrder");
 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order fetched successfully.",'/',{count,result}));
-    
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/')); 
+// Get All purchase Orders (Filters, sort)
+router.get("/", async (req, res) => {
+  try {
+    const {
+      startDate,
+      endDate,
+      sortByDateOfPurchase = -1,
+      sortByGrandTotal,
+      filterByInvoice,
+      filterBySuplierId,
+      filterByGrandTotalLte,
+      filterByGrandTotalGte,
+      filterByCreditAmountLte,
+      filterByCreditAmountGte,
+      page = 0,
+    } = req.query;
+    let sortObject = {};
+    let filterObject = {};
+
+    if (sortByDateOfPurchase) {
+      sortObject.dateOfPruchase = sortByDateOfPurchase;
     }
-})
 
-
-router.get('/',async (req,res)=>{
-    try {
-        const {startDate,endDate} = req.query;
-
-        const {count, error, result}= await purchaseOrderRepository.getAllPurchaseOrder(startDate,endDate);
-        if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Purchase order not found.",'/',{count,result}));
-        }
-
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order fetched successfully.",'/',{count,result}));
-    
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/')); 
+    if (sortByGrandTotal) {
+      sortObject.grandTotalAmount = sortByGrandTotal;
     }
-});
 
-router.get('/:id',async (req,res)=>{
-    try {
-        const {id} = req.params; 
-        const {count,error,result} = await purchaseOrderRepository.getSinglePurchaseOrder(id);
-        if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Purchase order not found.",'/',result));
-        }
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order fetched successfully.",'/',result));
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
+    if (filterByInvoice) {
+      filterObject.invoiceNumber = filterByInvoice;
     }
-});
 
-router.post('/addpurchaseorder',async (req,res)=>{
-    try {
-        const {
-            orderNumber,
-            supplierId,
-            dateOfPruchase,
-            products,
-            totalAmount,
-            paidAmount,
-            cerditAmount,
-            dueDate,
-            __v} = req.body;
+    if (filterBySuplierId) {
+      filterObject.supplierId = filterBySuplierId;
+    }
 
-            
-        const purchaseOrder = new PurchaseOrder(
-            orderNumber,
-            supplierId,
-            dateOfPruchase,
-            products,
-            totalAmount,
-            paidAmount,
-            cerditAmount,
-            dueDate,
-            __v 
+    if (filterByCreditAmountGte && filterByCreditAmountLte) {
+      filterObject.cerditAmount = {
+        $gte: filterByCreditAmountGte,
+        $lte: filterByCreditAmountLte,
+      };
+    }
+
+    if (filterByGrandTotalGte && filterByGrandTotalLte) {
+      filterObject.grandTotalAmount = {
+        $gte: filterByGrandTotalGte,
+        $lte: filterByGrandTotalLte,
+      };
+    }
+
+    const purchaseOrder = await purchaseOrderRepository.getAllPurchaseOrder(
+      startDate,
+      endDate,
+      sortObject,
+      filterObject,
+      page
+    );
+    const { error, result, count } = purchaseOrder;
+    if (!count) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "PO001",
+            "Purchase order not found.",
+            "purchaseOrder",
+            req.url,
+            req.method,
+            null
+          )
         );
-
-
-        
-        
-        // Validate request body 
-        const {error,value,warning} = validateReqBody(purchaseOrder);
-        
-
-        // If there is error in request body, then it will throw BAD request 
-        if(error){
-            return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,error.message));
-        }
-
-        if(supplierId != "dummuy"){
-            const supplierSideValidation = await supplierRepository.getSingleSupplier(supplierId);
-
-            if(!supplierSideValidation){
-                return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,"suuplier id invalid"));
-            }
-        }
-        //otherwise purchase order Repository is invoked.
-        const purchaseOrderObject = await purchaseOrderRepository.createPurchaseOrder(purchaseOrder);
-
-        
-        // If there is error in request body, then it will throw BAD request 
-        if(error){
-            return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,error.message));
-        }
-
-        // Successful response 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order added successfully.",'/',purchaseOrderObject));
-
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
     }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Purchase order fetched successfully.",
+          "purchaseOrder",
+          req.url,
+          { count, result }
+        )
+      );
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "PO002",
+          "Something Went Wrong.",
+          "purchaseOrder",
+          req.url,
+          req.method,
+          null
+        )
+      );
+  }
 });
 
-router.put('/updatepurchaseorder/:id',async (req,res)=>{
-    try {
-        const {id} = req.params;
-        const {
-            orderNumber,
-            supplierId,
-            dateOfPruchase,
-            products,
-            totalAmount,
-            paidAmount,
-            cerditAmount,
-            dueDate,
-            __v} = req.body;
-
-        const purchaseOrder = new PurchaseOrder(
-            orderNumber,
-            supplierId,
-            dateOfPruchase,
-            products,
-            totalAmount,
-            paidAmount,
-            cerditAmount,
-            dueDate,
-            __v 
+// Get Single Purchase Order
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await purchaseOrderRepository.getSinglePurchaseOrder(id);
+    if (result.error) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "PO003",
+            "Purchase order not found.",
+            "purchaseOrder",
+            req.url,
+            req.method,
+            null
+          )
         );
-        
-        // Validate request body 
-        const {error,value,warning} = validateReqBody(purchaseOrder);
-        
-        // If there is error in request body, then it will throw BAD request 
-        if(error){
-            return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,error.message));
-        }
-
-        if(supplierId != "dummuy"){
-            const supplierSideValidation = await supplierRepository.getSingleSupplier(supplierId);
-
-            if(!supplierSideValidation){
-                return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,"suuplier id invalid"));
-            }
-        }
-
-        purchaseOrder.__v += 1; 
-
-        //otherwise purchase order Repository is invoked.
-        const purchaseOrderObjectObject = await purchaseOrderRepository.updatePurchaseOrder(id,purchaseOrder);
-
-        //Successful response
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order updated successfully.",'/',purchaseOrderObjectObject));
-
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
     }
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Purchase order fetched successfully.",
+          "purchaseOrder",
+          req.url,
+          { count: 1, result }
+        )
+      );
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "PO004",
+          "Something Went Wrong.",
+          "purchaseOrder",
+          req.url,
+          req.method,
+          null
+        )
+      );
+  }
 });
 
-router.delete('/deletepurchaseorder/:id',async (req,res)=>{
-    try {
-        const {id} = req.params; 
-        const purchaseOrder = await purchaseOrderRepository.deletePurchaseOrder(id);
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Purchase order deleted successfully.",'/',purchaseOrder));
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
+//Create new purchase Order
+//Add stock
+router.post("/", async (req, res) => {
+  try {
+    // First check if the Supplier exists
+    //Add products first
+    const { purchaseOrderBody, stockBody } = req.body;
+    const {
+      invoiceNumber,
+      supplierId,
+      dateOfPruchase,
+      paidAmount,
+      dueDate,
+      addLessAmount,
+      crDrNote,
+    } = purchaseOrderBody;
+
+    if (!supplierId) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "PO014",
+            "Invalid Supplier Id provided.",
+            "purchaseOrder",
+            req.url,
+            req.method,
+            null
+          )
+        );
     }
+
+    const supplierDetails = await supplierRepository.getSingleSupplier(
+      supplierId
+    );
+
+    if (!supplierDetails) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "PO005",
+            "Invalid Supplier Id provided.",
+            "purchaseOrder",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    //Check
+    const existingPurchaseOrderDetails =
+      await purchaseOrderRepository.getAllPurchaseOrder(
+        undefined,
+        undefined,
+        undefined,
+        { invoiceNumber },
+        0
+      );
+    let productArary = [];
+    let totalAmount = 0;
+    let grandTotalAmount = 0;
+    let haveError = false;
+    let sgstPO = 0;
+    let cgstPO = 0;
+    const purchaseOrderIdExisting =
+      existingPurchaseOrderDetails.result[0]?._id.toString() || "dummy";
+    console.log(purchaseOrderIdExisting);
+    let discountPO = 0;
+    stockBody.forEach((element) => {
+      const {
+        productName,
+        category,
+        supplierName,
+        mfgDate,
+        expDate,
+        quantity,
+        rate,
+        sgst,
+        cgst,
+        mrp,
+        batchNumber,
+        discount,
+      } = element;
+
+      const product = new Product(
+        productName,
+        category,
+        supplierName,
+        purchaseOrderIdExisting,
+        invoiceNumber,
+        dateOfPruchase,
+        mfgDate,
+        expDate,
+        quantity,
+        quantity,
+        rate,
+        sgst,
+        cgst,
+        mrp.toString().trim(),
+        batchNumber,
+        discount,
+        0
+      );
+      console.log(mrp);
+      // Validate Stocks
+      const { error } = validateReqBodyProduct(product);
+      if (error) {
+        haveError = error;
+      }
+
+      totalAmount += product.rate * product.quantity;
+      grandTotalAmount +=
+        (parseInt(product.rate) +
+          parseInt(product.sgst) +
+          parseInt(product.cgst) -
+          parseInt(discount || 0)) *
+        product.quantity;
+
+      discountPO += parseInt(product.discount);
+      sgstPO += parseInt(product.sgst) * parseInt(product.quantity);
+      cgstPO += parseInt(product.cgst) * parseInt(product.quantity);
+
+      productArary.push(product);
+    });
+    if (haveError) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "PO006",
+            "Invalid Product details provided - " + haveError,
+            "purchaseOrder",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    if (!paidAmount || isNaN(paidAmount)) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "PO006",
+            "Invalid Product details provided.",
+            "purchaseOrder",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+    const creditAmount = grandTotalAmount - parseInt(paidAmount);
+
+    const purchaseOrder = new PurchaseOrder(
+      invoiceNumber,
+      supplierId,
+      dateOfPruchase,
+      totalAmount,
+      discountPO.toString(),
+      sgstPO.toString(),
+      cgstPO.toString(),
+      paidAmount,
+      creditAmount,
+      dueDate,
+      addLessAmount,
+      crDrNote,
+      grandTotalAmount,
+      0
+    );
+
+    const errorPurchaseOrder = validateReqBodyPurchaseOrder(purchaseOrder);
+
+    if (!errorPurchaseOrder.value) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "PO007",
+            "Invalid Purchase Order details provided. " +
+              errorPurchaseOrder.error,
+            "purchaseOrder",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    let purchaseOrderDetails;
+    if (existingPurchaseOrderDetails.result.length) {
+      purchaseOrder.totalAmount =
+        parseInt(existingPurchaseOrderDetails.result[0].totalAmount) +
+        parseInt(purchaseOrder.totalAmount);
+      purchaseOrder.paidAmount =
+        parseInt(existingPurchaseOrderDetails.result[0].paidAmount) +
+        parseInt(purchaseOrder.paidAmount);
+      purchaseOrder.sgst =
+        parseInt(existingPurchaseOrderDetails.result[0].sgst) +
+        parseInt(purchaseOrder.sgst);
+      purchaseOrder.cgst =
+        parseInt(existingPurchaseOrderDetails.result[0].cgst) +
+        parseInt(purchaseOrder.cgst);
+      purchaseOrder.grandTotalAmount =
+        parseInt(existingPurchaseOrderDetails.result[0].grandTotalAmount) +
+        parseInt(purchaseOrder.grandTotalAmount);
+      purchaseOrder.cerditAmount =
+        parseInt(existingPurchaseOrderDetails.result[0].cerditAmount) +
+        parseInt(purchaseOrder.cerditAmount);
+
+      purchaseOrder.__v = existingPurchaseOrderDetails.result[0].__v + 1;
+      purchaseOrder.discount += existingPurchaseOrderDetails.result[0].discount;
+
+      purchaseOrderDetails = await purchaseOrderRepository.updatePurchaseOrder(
+        existingPurchaseOrderDetails.result[0]._id.toString(),
+        purchaseOrder
+      );
+    } else {
+      purchaseOrderDetails = await purchaseOrderRepository.createPurchaseOrder(
+        purchaseOrder
+      );
+    }
+
+    if (!purchaseOrderDetails || purchaseOrderDetails.errorStatus) {
+      return res
+        .status(httpCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "PO008",
+            "Something Went Wrong. " + errorPurchaseOrder.message,
+            "purchaseOrder",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    if (purchaseOrderDetails._id) {
+      productArary.forEach((e) => {
+        e.purchaseOrderId = purchaseOrderDetails._id;
+      });
+    }
+
+    // let  productDetailsArray=[];
+    productArary.forEach(async (e) => {
+      const productTemp = await productRepository.createProduct(e);
+    });
+    // console.log(productDetailsArray)
+    // if(!productDetailsArray.length){
+    //     return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,"PO009","Internal Server Error.", "purchaseOrder",req.url, req.method,null));
+    // }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Purchase order and stock created successfully.",
+          "purchaseOrder",
+          req.url,
+          { count: 1, purchaseOrderDetails }
+        )
+      );
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "PO010",
+          "Something went wrong.",
+          "purchaseOrder",
+          req.url,
+          req.method,
+          null
+        )
+      );
+  }
 });
 
-module.exports=router;
+//Update Purchase Order
+router.put("/:id", async (req, res) => {
+  try {
+    const purchaseOrder = new PurchaseOrder(req.body);
+    const { error, value, warning } =
+      validateReqBodyPurchaseOrder(purchaseOrder);
+
+    // Validate request body
+    if (error) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "PO011",
+            "Invalid Purchase Order details provided - " + error.message,
+            "purchaseOrder",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    purchaseOrder.__v += 1;
+
+    //otherwise purchase order Repository is invoked.
+    const purchaseOrderObject =
+      await purchaseOrderRepository.updatePurchaseOrder(id, purchaseOrder);
+
+    //Successful response
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Purchase order updated successfully.",
+          "purchaseOrder",
+          req.url,
+          { count: 1, purchaseOrderObject }
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "PO012",
+          "Something Went wrong. " + errorPurchaseOrder.message,
+          "purchaseOrder",
+          req.url,
+          req.method,
+          null
+        )
+      );
+  }
+});
+
+//Delete the purchase order
+//Delete all the stocks added for that purchase order
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const purchaseOrder = await purchaseOrderRepository.deletePurchaseOrder(id);
+    const stock = await productRepository.deleteProductByPurchaseOrder(id);
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Purchase order and related Stock deleted successfully.",
+          "purchaseOrder",
+          req.url,
+          { purchaseOrder, stock }
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "PO013",
+          "Something Went wrong. " + errorPurchaseOrder.message,
+          "purchaseOrder",
+          req.url,
+          req.method,
+          null
+        )
+      );
+  }
+});
+
+module.exports = router;

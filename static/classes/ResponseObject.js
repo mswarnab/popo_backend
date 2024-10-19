@@ -1,11 +1,14 @@
-class ResponseObject{
-    constructor(status,message, api, result){
-        this.status=status;
-        this.message=message;
-        this.timestamp=Date.now();
-        this.api=api;
-        this.result=result;
-    }
+class ResponseObject {
+  constructor(status, method, message, api, path, result) {
+    this.status = status;
+    this.error = false;
+    this.method = method;
+    this.message = message;
+    this.timestamp = new Date();
+    this.api = api;
+    this.path = path;
+    this.result = result;
+  }
 }
 
-module.exports=ResponseObject;
+module.exports = ResponseObject;

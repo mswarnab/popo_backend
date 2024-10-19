@@ -1,15 +1,37 @@
-class Sale{
-    constructor(id,billNumber,customerId,dateOfSale,products,totalAmount,paidAmount,cerditAmount,dueDate,__v){
-        this.billNumber = billNumber.trim();
-        this.customerId=customerId.trim();
-        this.dateOfSale=dateOfSale.trim();
-        this.products=products.trim();
-        this.totalAmount=totalAmount.trim();
-        this.paidAmount=paidAmount.trim();
-        this.cerditAmount=cerditAmount.trim();
-        this.dueDate=dueDate.trim();
-        this.__V = __V.trim();
-    }
+const validateReqBody = require("../validation/validateSale");
+
+class Sale {
+  constructor(
+    billNumber,
+    customerId,
+    customerMobileNo,
+    dateOfSale,
+    products,
+    totalAmount,
+    cgst,
+    sgst,
+    discountedAmount,
+    paidAmount,
+    cerditAmount,
+    dueDate,
+    grandTotalAmount,
+    __v
+  ) {
+    this.billNumber = billNumber.trim();
+    this.customerId = customerId.trim();
+    this.customerMobileNo = customerMobileNo.trim();
+    this.dateOfSale = dateOfSale.trim();
+    this.products = products;
+    this.totalAmount = totalAmount.toString().trim();
+    (this.cgst = cgst.toString().trim()),
+      (this.sgst = sgst.toString().trim()),
+      (this.discountedAmount = discountedAmount.toString().trim());
+    this.paidAmount = paidAmount.toString().trim();
+    this.cerditAmount = cerditAmount.toString().trim();
+    this.dueDate = dueDate.trim();
+    this.grandTotalAmount = grandTotalAmount.toString().trim();
+    this.__v = __v.toString().trim();
+  }
 }
 
 module.exports = Sale;

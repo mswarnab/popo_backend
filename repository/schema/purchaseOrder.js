@@ -1,14 +1,19 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const purchaseOrdertSchema = new mongoose.Schema({
-    orderNumber: String,
-    supplierId:String,
-    dateOfPruchase: {type: Date,default:Date.now},
-    products:[{productId: String,quantity:Number }],
-    totalAmount:Number,
-    paidAmount: Number,
-    cerditAmount: Number,
-    dueDate: Date
-})
+  invoiceNumber: { type: String, unique: true },
+  supplierId: String,
+  dateOfPruchase: String,
+  totalAmount: Number,
+  discount: Number,
+  sgst: String,
+  cgst: String,
+  paidAmount: Number,
+  cerditAmount: Number,
+  dueDate: String,
+  addLessAmount: String,
+  crDrNote: String,
+  grandTotalAmount: Number,
+});
 
-module.exports = mongoose.model('PurchaseOrder',purchaseOrdertSchema);
+module.exports = mongoose.model("PurchaseOrder", purchaseOrdertSchema);

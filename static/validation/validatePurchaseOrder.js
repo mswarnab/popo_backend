@@ -1,39 +1,54 @@
-const Joi = require('joi');
+const Joi = require("joi");
 
 const validateReqBody = (
-    orderNumber,
+  invoiceNumber,
+  supplierId,
+  dateOfPruchase,
+  totalAmount,
+  discount,
+  sgst,
+  cgst,
+  paidAmount,
+  cerditAmount,
+  dueDate,
+  addLessAmount,
+  crDrNote,
+  grandTotalAmount,
+  __v
+) => {
+  const schema = Joi.object({
+    invoiceNumber: Joi.string().required(),
+    supplierId: Joi.string().required(),
+    dateOfPruchase: Joi.date().required(),
+    totalAmount: Joi.number().required(),
+    discount: Joi.number(),
+    sgst: Joi.number(),
+    cgst: Joi.number(),
+    paidAmount: Joi.number().required(),
+    cerditAmount: Joi.number().required(),
+    dueDate: Joi.date().required(),
+    grandTotalAmount: Joi.number().required(),
+    addLessAmount: Joi.string(),
+    crDrNote: Joi.string(),
+    __v: Joi.number().required(),
+  });
+
+  return ({ error, value, warning } = schema.validate(
+    invoiceNumber,
     supplierId,
     dateOfPruchase,
-    products,
     totalAmount,
+    discount,
+    sgst,
+    cgst,
     paidAmount,
     cerditAmount,
     dueDate,
-    __v 
-)=>{
-    const schema = Joi.object({
-        orderNumber:Joi.string().required(),
-        supplierId:Joi.string().required(),
-        dateOfPruchase: Joi.date().required(),
-        products:Joi.array().required(),
-        totalAmount:Joi.number().required(),
-        paidAmount:Joi.number().required(),
-        cerditAmount:Joi.number().required(),
-        dueDate:Joi.date().required(),
-        __v: Joi.number().required()
-    })
+    addLessAmount,
+    crDrNote,
+    grandTotalAmount,
+    __v
+  ));
+};
 
-    return {error,value,warning} = schema.validate(
-        orderNumber,
-        supplierId,
-        dateOfPruchase,
-        products,
-        totalAmount,
-        paidAmount,
-        cerditAmount,
-        dueDate,
-        __v 
-    )
-}
-
-module.exports=validateReqBody;
+module.exports = validateReqBody;

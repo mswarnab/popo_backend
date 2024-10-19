@@ -1,14 +1,21 @@
-class Supplier{
-    constructor(id,name,mobileNo,supplierEmail,supplierAddress,lastPurchaseDate,totalCreditAmount,__V){
-        this._id=id.trim();
-        this.supplierName = name.trim();
-        this.supplierContactNo = mobileNo.trim();
-        this.supplierEmail=supplierEmail.trim();
-        this.supplierAddress=supplierAddress.trim();
-        this.lastPurchaseDate=lastPurchaseDate.trim();
-        this.totalCreditAmount=totalCreditAmount.trim();
-        this.__V = __V.trim();
-    }
+class Supplier {
+  constructor(
+    supplierName,
+    mobileNo,
+    supplierEmail,
+    supplierAddress,
+    lastPurchaseDate,
+    totalCreditAmount,
+    __v
+  ) {
+    this.supplierName = supplierName.trim();
+    this.supplierContactNo = mobileNo.toString().trim();
+    this.supplierEmail = supplierEmail.trim();
+    this.supplierAddress = supplierAddress.trim();
+    this.lastPurchaseDate = lastPurchaseDate.trim();
+    this.totalCreditAmount = totalCreditAmount.toString().trim();
+    this.__v = __v.toString().trim();
+  }
 }
 
 module.exports = Supplier;

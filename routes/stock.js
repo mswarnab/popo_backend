@@ -1,172 +1,464 @@
-const router = require('express').Router();
-const {httpCodes}=require('../static')
+const router = require("express").Router();
+const { httpCodes } = require("../static");
 
-const productRepository = require('../repository/productRepository');
-const ResponseObject = require('../static/classes/ResponseObject');
-const ErrorObject = require('../static/classes/errorObject');
-const Product = require('../static/classes/product');
-const validateReqBody = require('../static/validation/validateProduct');
-const app = require('../appExpress');
+const productRepository = require("../repository/productRepository");
+const ResponseObject = require("../static/classes/ResponseObject");
+const ErrorObject = require("../static/classes/errorObject");
+const Product = require("../static/classes/product");
+const validateReqBody = require("../static/validation/validateProduct");
 
-router.get('/getexpiredproducts',async(req,res)=>{
-    
+router.get("/getexpiredproducts", async (req, res) => {
+  try {
+    const { category, duration } = req.query;
+    const { count, error, result } = await productRepository.getExpiredProducts(
+      category,
+      duration
+    );
 
-    try {
-        const {category,duration}  = req.query;
-        const {count,error ,result} = await productRepository.getExpiredProducts(category,duration);
-
-        if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Product not found.",'/',{count,result}));
-        }
-
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Product fetched successfully.",'/',{count,result}));
-    
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));       
-    }    
-});
-
-router.get('/searchproducts',async(req,res)=>{
-    
-
-    try {
-        const {pattern}  = req.query;
-        const {count,error ,result} = await productRepository.getSearchResult(pattern);
-
-        if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Product not found.",'/',{count,result}));
-        }
-
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Product fetched successfully.",'/',{count,result}));
-    
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));       
-    }    
-});
-
-router.get('/findproductwithname',async(req,res)=>{
-    
-    try {
-        const {pattern}  = req.query;
-        const {count,error ,result} = await productRepository.getProductsOnRegex(pattern);
-
-        if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Product not found.",'/',{count,result}));
-        }
-
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Product fetched successfully.",'/',{count,result}));
-    
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));       
-    }    
-});
-
-router.get('/', async(req,res)=>{
-    try {
-        const {sortByField,sortByValue,filterObject,page} = req.query;
-        console.log(req.query)
-        const {count,error, result} = await productRepository.getAllProducts(sortByField,sortByValue,filterObject,page);
-        if(!count){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Product not found.",'/',{count,result}));
-        }
-        app.emit("demo",result);
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Product fetched successfully.",'/',{count,result}));
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
+    if (!count) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "ST001",
+            "Stock not found.",
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
     }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Stock details fetched successfully.",
+          "stock",
+          req.url,
+          { count, result }
+        )
+      );
+  } catch (error) {
+    return res.status(
+      httpCodes.INTERNAL_SERVER_ERROR.send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "ST002",
+          "Something Went Wrong",
+          "stock",
+          req.url,
+          req.method,
+          null
+        )
+      )
+    );
+  }
 });
 
-router.get('/:id',async (req,res)=>{
-    try {
-        const {id} = req.params; 
-        const product = await productRepository.getSingleProduct(id);
-        if(!product){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Product not found.",'/',product));
-        }
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Product fetched successfully.",'/',product));
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
+router.get("/searchproducts", async (req, res) => {
+  try {
+    const { pattern } = req.query;
+    const { count, error, result } = await productRepository.getSearchResult(
+      pattern
+    );
+
+    if (!count) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "ST003",
+            "Stock not found.",
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
     }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Stock details fetched successfully.",
+          "stock",
+          req.url,
+          { count, result }
+        )
+      );
+  } catch (error) {
+    return res.status(
+      httpCodes.INTERNAL_SERVER_ERROR.send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "ST004",
+          "Something Went Wrong",
+          "stock",
+          req.url,
+          req.method,
+          null
+        )
+      )
+    );
+  }
 });
 
-router.post('/addstock',async(req,res)=>{  
-    try {
-        const {productName,category,supplierName,purchaseOrderId,purchaseDate, mfgDate, expDate, quantity, purchasePrice, mrp, batchNumber,__v=0} = req.body;
-        const product = new Product(productName,category,supplierName,purchaseOrderId,purchaseDate, mfgDate, expDate, quantity, purchasePrice, mrp, batchNumber,__v);
-        
-        // Validate request body 
-        const {error,value,warning} = validateReqBody(product);
-        
-        // If there is error in request body, then it will throw BAD request 
-        if(error){
-            return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,error.message));
-        }
+router.get("/findproductwithname", async (req, res) => {
+  try {
+    const { pattern } = req.query;
+    const { count, error, result } = await productRepository.getProductsOnRegex(
+      pattern
+    );
 
-        //otherwise create product Repository is invoked.
-        const productObj = await productRepository.createProduct(product);
-
-        // Successful response 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Product added successfully.",'/',productObj));
-
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
+    if (!count) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "ST005",
+            "Stock not found.",
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
     }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Stock details fetched successfully.",
+          "stock",
+          req.url,
+          { count, result }
+        )
+      );
+  } catch (error) {
+    return res.status(
+      httpCodes.INTERNAL_SERVER_ERROR.send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "ST006",
+          "Something Went Wrong",
+          "stock",
+          req.url,
+          req.method,
+          null
+        )
+      )
+    );
+  }
 });
 
-router.put('/updatestock/:id',async (req,res)=>{
-    try {
-        const {id} = req.params; 
-        const {productName,category,supplierName,purchaseOrderId,purchaseDate, mfgDate, expDate, quantity, purchasePrice, mrp, batchNumber,__v} = req.body;
-        const product = new Product(productName,category,supplierName,purchaseOrderId,purchaseDate, mfgDate, expDate, quantity, purchasePrice, mrp, batchNumber,__v);
-        
-        // Validate request body 
-        const {error,value,warning} = validateReqBody(product);
-        
-        // If there is error in request body, then it will throw BAD request 
-        if(error){
-            return res.status(httpCodes.BAD_REQUEST).send(new ErrorObject(httpCodes.BAD_REQUEST,error.message));
-        }
+router.get("/", async (req, res) => {
+  try {
+    const {
+      sortByDateOfPurchase,
+      sortByExpDate,
+      sortByQuantity,
+      sortByMrp,
+      sortByPurchasePrice,
+      filterByCategory,
+      filterBySupplierName,
+      filterByPurchaseOrderId,
+      filterByInvoiceNumber,
+      page,
+    } = req.query;
 
-        product.__v += 1; 
+    let sortObject = {};
+    let filterObject = {};
 
-        //otherwise create product Repository is invoked.
-        const productObject = await productRepository.updateProduct(id,product);
-
-        //Successful response
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Product updated successfully.",'/',productObject));
-
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
+    if (sortByDateOfPurchase) {
+      sortObject.dateOfPurchase = parseInt(sortByDateOfPurchase);
     }
-});
 
-router.delete('/deletestock/:id',async (req,res)=>{
-    try {
-        const {id} = req.params; 
-        const product = await productRepository.deleteProduct(id);
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Product deleted successfully.",'/',product));
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));
+    if (sortByExpDate) {
+      sortObject.expDate = parseInt(sortByExpDate);
     }
+
+    if (sortByQuantity) {
+      sortObject.quantity = parseInt(sortByQuantity);
+    }
+
+    if (sortByMrp) {
+      sortObject.mrp = parseInt(sortByMrp);
+    }
+
+    if (sortByPurchasePrice) {
+      sortObject.purchasePrice = parseInt(sortByPurchasePrice);
+    }
+
+    if (filterByCategory) {
+      filterObject.category = filterByCategory;
+    }
+    if (filterBySupplierName) {
+      filterObject.supplierName = filterBySupplierName;
+    }
+
+    if (filterByPurchaseOrderId) {
+      filterObject.purchaseOrderId = filterByPurchaseOrderId;
+    }
+
+    if (filterByInvoiceNumber) {
+      filterObject.invoiceNumber = filterByInvoiceNumber;
+    }
+
+    const { count, result } = await productRepository.getAllProducts(
+      sortObject,
+      filterObject,
+      page
+    );
+
+    if (!count) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "ST007",
+            "Stock not found.",
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Stock details fetched successfully.",
+          "stock",
+          req.url,
+          { count, result }
+        )
+      );
+  } catch (error) {
+    return res.status(
+      httpCodes.INTERNAL_SERVER_ERROR.send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "ST008",
+          "Something Went Wrong",
+          "stock",
+          req.url,
+          req.method,
+          null
+        )
+      )
+    );
+  }
 });
 
-router.get('/getexpiredproducts',async(req,res)=>{
-    console.log(duration)
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await productRepository.getSingleProduct(id);
+    if (!product.count) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "ST009",
+            "Stock not found.",
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Stock details fetched successfully.",
+          "stock",
+          req.url,
+          { count: product.count, result: product.result }
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "ST010",
+          "Something Went Wrong - " + error.message,
+          "stock",
+          req.url,
+          req.method,
+          null
+        )
+      );
+  }
+});
 
-    try {
-        const {category,duration}  = req.query;
-        console.log(category)
-        const productArray = await productRepository.getExpiredProducts(category,duration);
+router.post("/", async (req, res) => {
+  return res
+    .status(httpCodes.BAD_REQUEST)
+    .send(
+      new ErrorObject(
+        httpCodes.BAD_REQUEST,
+        "ST011",
+        "Please add a purchase order.",
+        "stock",
+        req.url,
+        req.method,
+        null
+      )
+    );
+});
 
-        if(!productArray.length){
-            return res.status(httpCodes.NOT_FOUND).send(new ErrorObject(httpCodes.NOT_FOUND,"Product not found.",'/',productArray));
-        }
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      productName,
+      category,
+      supplierName,
+      invoiceNumber,
+      dateOfPruchase,
+      mfgDate,
+      expDate,
+      quantity,
+      rate,
+      sgst,
+      cgst,
+      mrp,
+      batchNumber,
+      discount,
+      purchaseOrderId,
+      __v,
+    } = req.body;
+    const product = new Product(
+      productName,
+      category,
+      supplierName,
+      purchaseOrderId,
+      invoiceNumber,
+      dateOfPruchase,
+      mfgDate,
+      expDate,
+      quantity.toString(),
+      quantity.toString(),
+      rate.toString(),
+      sgst.toString(),
+      cgst.toString(),
+      mrp.toString(),
+      batchNumber,
+      discount.toString(),
+      __v.toString()
+    );
 
-        return res.status(httpCodes.OK).send(new ResponseObject(httpCodes.OK,"Product fetched successfully.",'/',productArray));
-    
-    } catch (error) {
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,error.message,'/'));       
-    }    
-})
+    // Validate request body
+    const { error, value, warning } = validateReqBody(product);
 
-module.exports=router;
+    // If there is error in request body, then it will throw BAD request
+    if (error) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "ST012",
+            "Invalid Stock details provided - " + error.message,
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    product.__v += 1;
+
+    //otherwise create product Repository is invoked.
+    const productObject = await productRepository.updateProduct(id, product);
+
+    //Successful response
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Stock details updated successfully.",
+          "stock",
+          req.url,
+          { count: 1, result: productObject }
+        )
+      );
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "ST013",
+          "Something Went Wrong + " + error.message,
+          "stock",
+          req.url,
+          req.method,
+          null
+        )
+      );
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await productRepository.deleteProduct(id);
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Stock details deleted successfully.",
+          "stock",
+          req.url,
+          { count: 1, result: product }
+        )
+      );
+  } catch (error) {
+    return res.status(
+      httpCodes.INTERNAL_SERVER_ERROR.send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "ST014",
+          "Something Went Wrong",
+          "stock",
+          req.url,
+          req.method,
+          null
+        )
+      )
+    );
+  }
+});
+
+module.exports = router;
