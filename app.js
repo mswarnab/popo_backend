@@ -10,6 +10,7 @@ const {
   supplierRouter,
   authRouter,
 } = require("./routes");
+const cors = require("cors");
 const connectMongo = require("./repository/connection");
 const dayjs = require("dayjs");
 const getCurrentDate = require("./static/functions/getCurrentDate");
@@ -19,7 +20,7 @@ const validateAuthorization = require("./middleware/auth");
 // app.on('demo',(result)=>{
 //   console.log('result in event'+result)
 // })
-
+app.use(cors());
 app.use(validateAuthorization);
 app.use(routes.AUTH, authRouter);
 app.use(routes.STOCK, stockRouter);
