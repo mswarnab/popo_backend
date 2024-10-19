@@ -28,13 +28,13 @@ module.exports = class Product {
     this.expDate = expDate.trim();
     this.purchaseQuantity = parseInt(purchaseQuantity);
     this.quantity = parseInt(quantity);
-    this.rate = rate.trim();
-    this.sgst = sgst.trim();
-    this.cgst = cgst.trim();
+    this.rate = rate.toString().trim();
+    this.sgst = sgst.toString().trim();
+    this.cgst = cgst.toString().trim();
     // this.purchasePrice = parseInt(rate) * 1 + (parseInt(sgst) +parseInt(cgst)) ;
     this.discount = parseInt(discount);
     this.mrp = parseInt(mrp);
-    this.batchNumber = batchNumber.trim();
+    this.batchNumber = batchNumber.toString().trim();
     this.__v = __v;
   }
 };
