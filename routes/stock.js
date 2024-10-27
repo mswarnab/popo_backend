@@ -44,8 +44,9 @@ router.get("/getexpiredproducts", async (req, res) => {
         )
       );
   } catch (error) {
-    return res.status(
-      httpCodes.INTERNAL_SERVER_ERROR.send(
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
         new ErrorObject(
           httpCodes.INTERNAL_SERVER_ERROR,
           "ST002",
@@ -53,14 +54,13 @@ router.get("/getexpiredproducts", async (req, res) => {
           "stock",
           req.url,
           req.method,
-          null
+          error
         )
-      )
-    );
+      );
   }
 });
 
-router.get("/searchproducts", async (req, res) => {
+router.get("/search", async (req, res) => {
   try {
     const { pattern } = req.query;
     const { count, error, result } = await productRepository.getSearchResult(
@@ -105,7 +105,7 @@ router.get("/searchproducts", async (req, res) => {
           "stock",
           req.url,
           req.method,
-          null
+          error
         )
       )
     );
@@ -114,9 +114,10 @@ router.get("/searchproducts", async (req, res) => {
 
 router.get("/findproductwithname", async (req, res) => {
   try {
-    const { pattern } = req.query;
+    const { pattern, page } = req.query;
     const { count, error, result } = await productRepository.getProductsOnRegex(
-      pattern
+      pattern,
+      page
     );
 
     if (!count) {
@@ -157,7 +158,7 @@ router.get("/findproductwithname", async (req, res) => {
           "stock",
           req.url,
           req.method,
-          null
+          error
         )
       )
     );
@@ -183,23 +184,23 @@ router.get("/", async (req, res) => {
     let filterObject = {};
 
     if (sortByDateOfPurchase) {
-      sortObject.dateOfPurchase = parseInt(sortByDateOfPurchase);
+      sortObject.dateOfPurchase = parseFloat(sortByDateOfPurchase);
     }
 
     if (sortByExpDate) {
-      sortObject.expDate = parseInt(sortByExpDate);
+      sortObject.expDate = parseFloat(sortByExpDate);
     }
 
     if (sortByQuantity) {
-      sortObject.quantity = parseInt(sortByQuantity);
+      sortObject.quantity = parseFloat(sortByQuantity);
     }
 
     if (sortByMrp) {
-      sortObject.mrp = parseInt(sortByMrp);
+      sortObject.mrp = parseFloat(sortByMrp);
     }
 
     if (sortByPurchasePrice) {
-      sortObject.purchasePrice = parseInt(sortByPurchasePrice);
+      sortObject.purchasePrice = parseFloat(sortByPurchasePrice);
     }
 
     if (filterByCategory) {
@@ -260,7 +261,7 @@ router.get("/", async (req, res) => {
           "stock",
           req.url,
           req.method,
-          null
+          error
         )
       )
     );
@@ -309,7 +310,7 @@ router.get("/:id", async (req, res) => {
           "stock",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -355,6 +356,7 @@ router.put("/:id", async (req, res) => {
     const product = new Product(
       productName,
       category,
+      supplierId,
       supplierName,
       purchaseOrderId,
       invoiceNumber,
@@ -411,7 +413,6 @@ router.put("/:id", async (req, res) => {
         )
       );
   } catch (error) {
-    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -422,7 +423,7 @@ router.put("/:id", async (req, res) => {
           "stock",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -454,7 +455,7 @@ router.delete("/:id", async (req, res) => {
           "stock",
           req.url,
           req.method,
-          null
+          error
         )
       )
     );

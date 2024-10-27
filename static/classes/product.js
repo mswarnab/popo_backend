@@ -2,8 +2,11 @@ module.exports = class Product {
   constructor(
     productName,
     category,
+    supplierId,
     supplierName,
     purchaseOrderId,
+    mfrCode,
+    hsnCode,
     invoiceNumber,
     dateOfPruchase,
     mfgDate,
@@ -19,21 +22,23 @@ module.exports = class Product {
     __v
   ) {
     this.productName = productName.trim();
-    this.category = category.trim();
+    this.category = category.toString().toUpperCase().trim();
+    this.supplierId = supplierId.trim();
     this.supplierName = supplierName.trim();
     this.purchaseOrderId = purchaseOrderId;
+    this.mfrCode = mfrCode.trim();
+    this.hsnCode = hsnCode.trim();
     this.invoiceNumber = invoiceNumber.trim();
     this.dateOfPruchase = dateOfPruchase.trim();
     this.mfgDate = mfgDate.trim();
     this.expDate = expDate.trim();
-    this.purchaseQuantity = parseInt(purchaseQuantity);
-    this.quantity = parseInt(quantity);
+    this.purchaseQuantity = parseFloat(purchaseQuantity);
+    this.quantity = parseFloat(quantity);
     this.rate = rate.toString().trim();
     this.sgst = sgst.toString().trim();
     this.cgst = cgst.toString().trim();
-    // this.purchasePrice = parseInt(rate) * 1 + (parseInt(sgst) +parseInt(cgst)) ;
-    this.discount = parseInt(discount);
-    this.mrp = parseInt(mrp);
+    this.discount = parseFloat(discount);
+    this.mrp = parseFloat(mrp);
     this.batchNumber = batchNumber.toString().trim();
     this.__v = __v;
   }

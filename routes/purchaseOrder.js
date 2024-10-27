@@ -98,7 +98,6 @@ router.get("/", async (req, res) => {
         )
       );
   } catch (error) {
-    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -109,7 +108,7 @@ router.get("/", async (req, res) => {
           "purchaseOrder",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -148,7 +147,6 @@ router.get("/:id", async (req, res) => {
         )
       );
   } catch (error) {
-    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -159,7 +157,7 @@ router.get("/:id", async (req, res) => {
           "purchaseOrder",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -177,6 +175,7 @@ router.post("/", async (req, res) => {
       supplierId,
       dateOfPruchase,
       paidAmount,
+      modeOfPayment,
       dueDate,
       addLessAmount,
       crDrNote,
@@ -202,14 +201,14 @@ router.post("/", async (req, res) => {
       supplierId
     );
 
-    if (!supplierDetails) {
+    if (!supplierDetails.result) {
       return res
         .status(httpCodes.NOT_FOUND)
         .send(
           new ErrorObject(
             httpCodes.NOT_FOUND,
             "PO005",
-            "Invalid Supplier Id provided.",
+            "Supplier not created.",
             "purchaseOrder",
             req.url,
             req.method,
@@ -235,13 +234,15 @@ router.post("/", async (req, res) => {
     let cgstPO = 0;
     const purchaseOrderIdExisting =
       existingPurchaseOrderDetails.result[0]?._id.toString() || "dummy";
-    console.log(purchaseOrderIdExisting);
     let discountPO = 0;
     stockBody.forEach((element) => {
       const {
         productName,
         category,
+        supplierId,
         supplierName,
+        mfrCode,
+        hsnCode,
         mfgDate,
         expDate,
         quantity,
@@ -256,8 +257,11 @@ router.post("/", async (req, res) => {
       const product = new Product(
         productName,
         category,
+        supplierId,
         supplierName,
         purchaseOrderIdExisting,
+        mfrCode,
+        hsnCode,
         invoiceNumber,
         dateOfPruchase,
         mfgDate,
@@ -272,7 +276,6 @@ router.post("/", async (req, res) => {
         discount,
         0
       );
-      console.log(mrp);
       // Validate Stocks
       const { error } = validateReqBodyProduct(product);
       if (error) {
@@ -281,15 +284,15 @@ router.post("/", async (req, res) => {
 
       totalAmount += product.rate * product.quantity;
       grandTotalAmount +=
-        (parseInt(product.rate) +
-          parseInt(product.sgst) +
-          parseInt(product.cgst) -
-          parseInt(discount || 0)) *
+        (parseFloat(product.rate) +
+          parseFloat(product.sgst) +
+          parseFloat(product.cgst) -
+          parseFloat(discount || 0)) *
         product.quantity;
 
-      discountPO += parseInt(product.discount);
-      sgstPO += parseInt(product.sgst) * parseInt(product.quantity);
-      cgstPO += parseInt(product.cgst) * parseInt(product.quantity);
+      discountPO += parseFloat(product.discount);
+      sgstPO += parseFloat(product.sgst) * parseFloat(product.quantity);
+      cgstPO += parseFloat(product.cgst) * parseFloat(product.quantity);
 
       productArary.push(product);
     });
@@ -324,7 +327,7 @@ router.post("/", async (req, res) => {
           )
         );
     }
-    const creditAmount = grandTotalAmount - parseInt(paidAmount);
+    const creditAmount = grandTotalAmount - parseFloat(paidAmount);
 
     const purchaseOrder = new PurchaseOrder(
       invoiceNumber,
@@ -335,6 +338,7 @@ router.post("/", async (req, res) => {
       sgstPO.toString(),
       cgstPO.toString(),
       paidAmount,
+      modeOfPayment,
       creditAmount,
       dueDate,
       addLessAmount,
@@ -365,23 +369,23 @@ router.post("/", async (req, res) => {
     let purchaseOrderDetails;
     if (existingPurchaseOrderDetails.result.length) {
       purchaseOrder.totalAmount =
-        parseInt(existingPurchaseOrderDetails.result[0].totalAmount) +
-        parseInt(purchaseOrder.totalAmount);
+        parseFloat(existingPurchaseOrderDetails.result[0].totalAmount) +
+        parseFloat(purchaseOrder.totalAmount);
       purchaseOrder.paidAmount =
-        parseInt(existingPurchaseOrderDetails.result[0].paidAmount) +
-        parseInt(purchaseOrder.paidAmount);
+        parseFloat(existingPurchaseOrderDetails.result[0].paidAmount) +
+        parseFloat(purchaseOrder.paidAmount);
       purchaseOrder.sgst =
-        parseInt(existingPurchaseOrderDetails.result[0].sgst) +
-        parseInt(purchaseOrder.sgst);
+        parseFloat(existingPurchaseOrderDetails.result[0].sgst) +
+        parseFloat(purchaseOrder.sgst);
       purchaseOrder.cgst =
-        parseInt(existingPurchaseOrderDetails.result[0].cgst) +
-        parseInt(purchaseOrder.cgst);
+        parseFloat(existingPurchaseOrderDetails.result[0].cgst) +
+        parseFloat(purchaseOrder.cgst);
       purchaseOrder.grandTotalAmount =
-        parseInt(existingPurchaseOrderDetails.result[0].grandTotalAmount) +
-        parseInt(purchaseOrder.grandTotalAmount);
+        parseFloat(existingPurchaseOrderDetails.result[0].grandTotalAmount) +
+        parseFloat(purchaseOrder.grandTotalAmount);
       purchaseOrder.cerditAmount =
-        parseInt(existingPurchaseOrderDetails.result[0].cerditAmount) +
-        parseInt(purchaseOrder.cerditAmount);
+        parseFloat(existingPurchaseOrderDetails.result[0].cerditAmount) +
+        parseFloat(purchaseOrder.cerditAmount);
 
       purchaseOrder.__v = existingPurchaseOrderDetails.result[0].__v + 1;
       purchaseOrder.discount += existingPurchaseOrderDetails.result[0].discount;
@@ -418,14 +422,19 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // let  productDetailsArray=[];
     productArary.forEach(async (e) => {
-      const productTemp = await productRepository.createProduct(e);
+      await productRepository.createProduct(e);
     });
-    // console.log(productDetailsArray)
-    // if(!productDetailsArray.length){
-    //     return res.status(httpCodes.INTERNAL_SERVER_ERROR).send(new ErrorObject(httpCodes.INTERNAL_SERVER_ERROR,"PO009","Internal Server Error.", "purchaseOrder",req.url, req.method,null));
-    // }
+
+    const supplierObject = supplierDetails.result;
+
+    if (creditAmount) {
+      supplierObject.totalCreditAmount += creditAmount;
+      await supplierRepository.updateSupplier(
+        supplierObject._id,
+        supplierObject
+      );
+    }
 
     return res
       .status(httpCodes.OK)
@@ -440,7 +449,6 @@ router.post("/", async (req, res) => {
         )
       );
   } catch (error) {
-    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -451,7 +459,7 @@ router.post("/", async (req, res) => {
           "purchaseOrder",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -511,7 +519,7 @@ router.put("/:id", async (req, res) => {
           "purchaseOrder",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -548,7 +556,7 @@ router.delete("/:id", async (req, res) => {
           "purchaseOrder",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }

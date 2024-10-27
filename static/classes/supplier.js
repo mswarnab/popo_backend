@@ -4,6 +4,7 @@ class Supplier {
     mobileNo,
     supplierEmail,
     supplierAddress,
+    gstinNumber,
     lastPurchaseDate,
     totalCreditAmount,
     __v
@@ -12,7 +13,8 @@ class Supplier {
     this.supplierContactNo = mobileNo.toString().trim();
     this.supplierEmail = supplierEmail.trim();
     this.supplierAddress = supplierAddress.trim();
-    this.lastPurchaseDate = lastPurchaseDate.trim();
+    this.gstinNumber = gstinNumber.trim();
+    this.lastPurchaseDate = lastPurchaseDate.toString().trim();
     this.totalCreditAmount = totalCreditAmount.toString().trim();
     this.__v = __v.toString().trim();
   }

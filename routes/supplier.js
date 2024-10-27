@@ -1,17 +1,66 @@
 const router = require("express").Router();
 const supplierRepository = require("../repository/supplierRepository");
 const Supplier = require("../static/classes/supplier");
-const getCurrentDate = require("../static/functions/getCurrentDate");
+const { getCurrentDate } = require("../static/functions/getDate");
 const validateReqBody = require("../static/validation/validateSupplier");
 const ResponseObject = require("../static/classes/ResponseObject");
 const ErrorObject = require("../static/classes/errorObject");
 
 const { httpCodes } = require("../static");
 
+router.get("/totaldue", async (req, res) => {
+  try {
+    const { count, error, result, errorStatus } =
+      await supplierRepository.getTotalCreditAmount();
+
+    if (errorStatus) {
+      return res
+        .status(httpCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "SU088",
+            "Something went wrong.",
+            "supplier",
+            req.url,
+            req.method,
+            error
+          )
+        );
+    }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Supplier details fetched successfully.",
+          "supplier",
+          req.url,
+          { count, result }
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "SU077",
+          "Something went wrong.",
+          "supplier",
+          req.url,
+          req.method,
+          error
+        )
+      );
+  }
+});
+
 router.get("/search", async (req, res) => {
   try {
     const { pattern } = req.query;
-    console.log(pattern);
     const { count, error, result } = await supplierRepository.getSearchResult(
       pattern
     );
@@ -55,7 +104,7 @@ router.get("/search", async (req, res) => {
           "supplier",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -106,7 +155,7 @@ router.get("/search", async (req, res) => {
 //           "supplier",
 //           req.url,
 //           req.method,
-//           null
+//           error
 //         )
 //       );
 //   }
@@ -156,7 +205,7 @@ router.get("/creditamount", async (req, res) => {
           "supplier",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -207,7 +256,7 @@ router.get("/", async (req, res) => {
           "supplier",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -255,7 +304,7 @@ router.get("/:id", async (req, res) => {
           "supplier",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -263,14 +312,20 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { supplierName, supplierContactNo, supplierEmail, supplierAddress } =
-      req.body;
-
+    const {
+      supplierName,
+      supplierContactNo,
+      supplierEmail,
+      supplierAddress,
+      gstinNumber,
+      totalCreditAmount,
+    } = req.body;
     const supplier = new Supplier(
       supplierName,
       supplierContactNo,
       supplierEmail || "dummy",
       supplierAddress || "Dummy",
+      gstinNumber,
       getCurrentDate,
       0,
       0
@@ -295,7 +350,24 @@ router.post("/", async (req, res) => {
           )
         );
     }
+    const supplierOnMobileNo =
+      await supplierRepository.getSingleSupplierByMobileNo(supplierContactNo);
 
+    if (supplierOnMobileNo.result.length) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "SU099",
+            "Another supplier with this mobile number already exists - ",
+            "supplier",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
     //otherwise purchase order Repository is invoked.
     const supplierObject = await supplierRepository.createSupplier(supplier);
 
@@ -323,7 +395,7 @@ router.post("/", async (req, res) => {
           "supplier",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -337,6 +409,7 @@ router.put("/:id", async (req, res) => {
       supplierContactNo,
       supplierEmail,
       supplierAddress,
+      gstinNumber,
       lastPurchaseDate,
       totalCreditAmount,
       __v,
@@ -347,6 +420,7 @@ router.put("/:id", async (req, res) => {
       supplierContactNo,
       supplierEmail,
       supplierAddress,
+      gstinNumber,
       lastPurchaseDate,
       totalCreditAmount,
       __v
@@ -372,7 +446,7 @@ router.put("/:id", async (req, res) => {
         );
     }
 
-    supplier.__v += 1;
+    supplier.__v = parseFloat(supplier.__v) + 1;
 
     //otherwise purchase order Repository is invoked.
     const supplierObject = await supplierRepository.updateSupplier(
@@ -380,7 +454,7 @@ router.put("/:id", async (req, res) => {
       supplier
     );
 
-    if (supplierObject.error) {
+    if (supplierObject?.error) {
       return res
         .status(httpCodes.BAD_REQUEST)
         .send(
@@ -420,7 +494,7 @@ router.put("/:id", async (req, res) => {
           "supplier",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }

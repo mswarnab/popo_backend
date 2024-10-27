@@ -1,4 +1,5 @@
 const { productCategory } = require("../static");
+const { formatDate, getCurrentDate } = require("../static/functions/getDate");
 const Product = require("./schema/product");
 
 const createProduct = async (productObject) => {
@@ -6,7 +7,6 @@ const createProduct = async (productObject) => {
     const product = new Product(productObject);
     return await product.save();
   } catch (error) {
-    console.log(error);
     return { errorStatus: true, error };
   }
 };
@@ -46,7 +46,7 @@ const getAllProducts = async (sortObject, filterObject, page) => {
 
     result = await Product.find(filterObject)
       .sort(sortObject)
-      .skip(20 * parseInt(page))
+      .skip(20 * parseFloat(page))
       .limit(20);
 
     return { count, result };
@@ -71,12 +71,19 @@ const deleteProductByPurchaseOrder = async (id) => {
   }
 };
 
-const getExpiredProducts = async (category = productCategory, duration = 3) => {
-  const currentDate = new Date();
-  const notificationDate = new Date(
-    currentDate.setMonth(currentDate.getMonth() + parseInt(duration))
-  );
+const getExpiredProducts = async (
+  category = productCategory,
+  duration = 300,
+  page = 0
+) => {
   try {
+    const currentDate = new Date();
+    const notificationDate = formatDate(
+      new Date(
+        currentDate.setMonth(currentDate.getMonth() + parseFloat(duration))
+      )
+    );
+
     const count = await Product.find()
       .where("category")
       .in(typeof category == "object" ? category : [category])
@@ -99,32 +106,48 @@ const getExpiredProducts = async (category = productCategory, duration = 3) => {
   }
 };
 
-const getSearchResult = async (regex) => {
+const getSearchResult = async (pattern) => {
   try {
-    const result = await Product.find()
-      .select("productName")
-      .distinct()
-      .where("productName")
-      .regex(regex)
+    const count = await Product.find({
+      productName: { $regex: pattern, $options: "i" },
+    })
+      .select(["productName"])
+
+      .countDocuments();
+
+    const result = await Product.find({
+      productName: { $regex: pattern, $options: "i" },
+    })
+      .select(["productName"])
       .limit(10);
-    return { count: 10, result };
+
+    return { count, result };
   } catch (error) {
     return { errorStatus: true, error };
   }
 };
 
-const getProductsOnRegex = async (regex, page = 0) => {
+const getProductsOnRegex = async (pattern, page = 0) => {
   try {
-    const count = await Product.find()
-      .where("productName")
-      .regex(regex)
-      .countDocuments();
+    const count = await Product.find({
+      productName: { $regex: pattern, $options: "i" },
+    }).countDocuments();
 
-    const result = await Product.find()
-      .where("productName")
-      .regex(regex)
-      .skip(20 * parseInt(page))
+    const result = await Product.find({
+      productName: { $regex: pattern, $options: "i" },
+    })
+      .select([
+        "productName",
+        "rate",
+        "mrp",
+        "expDate",
+        "quantity",
+        "mfrCode",
+        "supplierName",
+      ])
+      .skip(20 * parseFloat(page))
       .limit(20);
+
     return { count, result };
   } catch (error) {
     return { errorStatus: true, error };
@@ -143,51 +166,3 @@ module.exports = {
   getProductsOnRegex,
   deleteProductByPurchaseOrder,
 };
-
-// if(sortByField && filterByField ){
-//     count = await Product.find()
-//         .sort({[sortByField]:parseInt(sortByValue)})
-//         .where(filterByField)
-//         .equals(filterByValue)
-//         .countDocuments();
-//     result = await Product.find()
-//         .sort({[sortByField]:parseInt(sortByValue)})
-//         .where(filterByField)
-//         .equals(filterByValue)
-//         .skip(20* parseInt(page))
-//         .limit(20);
-//     console.log("sort && filter")
-// }
-
-// if(sortByField && !filterByField){
-//     count = await Product.find()
-//                 .sort({[sortByField]:parseInt(sortByValue)})
-//                 .countDocuments();
-//     result = await Product.find()
-//                 .sort({[sortByField]:parseInt(sortByValue)})
-//                 .skip(20* parseInt(page))
-//                 .limit(20);
-//     console.log("sort")
-// }
-
-// if(!sortByField && filterByField){
-//     count = await Product.find()
-//                 .where(filterByField)
-//                 .equals(filterByValue)
-//                 .countDocuments();
-//     result = await Product.find()
-//                 .where(filterByField)
-//                 .equals(filterByValue)
-//                 .skip(20* parseInt(page))
-//                 .limit(20);
-//     console.log(" filter")
-// }
-
-// if(!sortByField && !filterByField){
-//     count = await Product.find()
-//                         .countDocuments();
-//     result = await Product.find()
-//                         .skip(20* parseInt(page))
-//                         .limit(20);
-//     console.log("nothing")
-// }

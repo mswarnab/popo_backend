@@ -1,13 +1,6 @@
 module.exports = {
-  productCategory: [
-    "MEDICINE",
-    "DOGFOOD",
-    "TOYS",
-    "ACCESSORIES",
-    "CATFOOD",
-    "SHAMPOO",
-    "TREATS",
-  ],
+  productCategory: ["MEDICINE", "FOOD", "ACCESSORIES"],
+  modeOfPayment: ["CASH", "CARD", "ONLINE"],
   httpCodes: {
     INTERNAL_SERVER_ERROR: 500,
     OK: 200,

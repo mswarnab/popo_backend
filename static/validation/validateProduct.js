@@ -3,8 +3,11 @@ const { productCategory } = require("../../static");
 const validateReqBody = (
   productName,
   category,
+  supplierId,
   supplierName,
   purchaseOrderId,
+  mfrCode,
+  hsnCode,
   invoiceNumber,
   dateOfPruchase,
   mfgDate,
@@ -24,8 +27,11 @@ const validateReqBody = (
     category: Joi.string()
       .valid(...productCategory)
       .required(),
+    supplierId: Joi.string().required(),
     supplierName: Joi.string().min(3).max(100).required(),
     purchaseOrderId: Joi.string().required(),
+    mfrCode: Joi.string().required(),
+    hsnCode: Joi.string().required(),
     invoiceNumber: Joi.string().required(),
     dateOfPruchase: Joi.date().required(),
     mfgDate: Joi.date().required(),
@@ -44,8 +50,11 @@ const validateReqBody = (
   return ({ error, value, warning } = schema.validate(
     productName,
     category,
+    supplierId,
     supplierName,
     purchaseOrderId,
+    mfrCode,
+    hsnCode,
     invoiceNumber,
     dateOfPruchase,
     mfgDate,

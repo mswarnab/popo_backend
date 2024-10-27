@@ -3,8 +3,11 @@ const mongoose = require("mongoose");
 const productSchema = new mongoose.Schema({
   productName: String,
   category: String,
+  supplierId: String,
   supplierName: String,
   purchaseOrderId: String,
+  mfrCode: String,
+  hsnCode: String,
   invoiceNumner: String,
   dateOfPruchase: String,
   mfgDate: String,

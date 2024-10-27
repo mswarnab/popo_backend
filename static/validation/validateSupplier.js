@@ -5,6 +5,7 @@ const validateReqBody = (
   supplierContactNo,
   supplierEmail,
   supplierAddress,
+  gstinNumber,
   lastPurchaseDate,
   totalCreditAmount,
   __v
@@ -14,6 +15,7 @@ const validateReqBody = (
     supplierContactNo: Joi.string().required().min(10).max(10),
     supplierEmail: Joi.string().required(),
     supplierAddress: Joi.string().required(),
+    gstinNumber: Joi.string().required(),
     lastPurchaseDate: Joi.date().required(),
     totalCreditAmount: Joi.number().required(),
     __v: Joi.number().required(),
@@ -24,6 +26,7 @@ const validateReqBody = (
     supplierContactNo,
     supplierEmail,
     supplierAddress,
+    gstinNumber,
     lastPurchaseDate,
     totalCreditAmount,
     __v

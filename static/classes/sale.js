@@ -23,9 +23,9 @@ class Sale {
     this.dateOfSale = dateOfSale.trim();
     this.products = products;
     this.totalAmount = totalAmount.toString().trim();
-    (this.cgst = cgst.toString().trim()),
-      (this.sgst = sgst.toString().trim()),
-      (this.discountedAmount = discountedAmount.toString().trim());
+    this.cgst = cgst.toString().trim();
+    this.sgst = sgst.toString().trim();
+    this.discountedAmount = discountedAmount.toString().trim();
     this.paidAmount = paidAmount.toString().trim();
     this.cerditAmount = cerditAmount.toString().trim();
     this.dueDate = dueDate.trim();

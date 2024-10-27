@@ -10,7 +10,6 @@ const createPurchaseOrder = async (PurchaseOrderObject) => {
 };
 
 const updatePurchaseOrder = async (id, PurchaseOrderObject) => {
-  console.log("poobjefct", PurchaseOrderObject);
   try {
     return await PurchaseOrder.findByIdAndUpdate(id, PurchaseOrderObject, {
       returnDocument: "after",
@@ -42,7 +41,7 @@ const getPurchaseOrderBasedOnSupplierId = async (
       .where("supplierId")
       .equals(supplierId)
       .sort({ dateOfPruchase: sortValue })
-      .skip(20 * page)
+      .skip(20 * parseFloat(page))
       .limit(20);
     return { count, result };
   } catch (error) {
@@ -84,8 +83,6 @@ const getAllPurchaseOrder = async (
   filterObj = {},
   page
 ) => {
-  console.log(sortObject);
-  console.log(filterObj);
   try {
     const count = await PurchaseOrder.find({
       ...filterObj,
@@ -98,7 +95,7 @@ const getAllPurchaseOrder = async (
       dateOfPruchase: { $gte: startDate, $lte: endDate },
     })
       .sort(sortObject)
-      .skip(20 * parseInt(page))
+      .skip(20 * parseFloat(page))
       .limit(20);
     return { count, result };
   } catch (error) {

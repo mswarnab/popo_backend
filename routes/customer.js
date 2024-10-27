@@ -7,6 +7,56 @@ const ErrorObject = require("../static/classes/errorObject");
 
 const { httpCodes } = require("../static");
 
+router.get("/totaldue", async (req, res) => {
+  try {
+    const { count, error, result, errorStatus } =
+      await customerRepository.getTotalCreditAmount();
+
+    if (errorStatus) {
+      return res
+        .status(httpCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "CU088",
+            "Something went wrong.",
+            "customer",
+            req.url,
+            req.method,
+            error
+          )
+        );
+    }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Customer details fetched successfully.",
+          "customer",
+          req.url,
+          { count, result }
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "CU077",
+          "Something went wrong.",
+          "customer",
+          req.url,
+          req.method,
+          error
+        )
+      );
+  }
+});
+
 router.get("/mobile/:mobileNo", async (req, res) => {
   try {
     const { mobileNo } = req.params;
@@ -50,7 +100,7 @@ router.get("/mobile/:mobileNo", async (req, res) => {
           "customer",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -102,7 +152,7 @@ router.get("/search", async (req, res) => {
           "customer",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -153,7 +203,7 @@ router.get("/findcustomerwithname", async (req, res) => {
           "customer",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -204,7 +254,7 @@ router.get("/creditamount", async (req, res) => {
           "customer",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -212,7 +262,7 @@ router.get("/creditamount", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { page } = req.params;
+    const { page } = req.query;
     const { count, result, error } = await customerRepository.getAllCustomer(
       page
     );
@@ -255,7 +305,7 @@ router.get("/", async (req, res) => {
           "customer",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -305,7 +355,7 @@ router.get("/:id", async (req, res) => {
           "customer",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -352,7 +402,6 @@ router.post("/", async (req, res) => {
     const customerOnMobileNo =
       await customerRepository.getSingleCustomerByMobileNo(customerContactNo);
 
-    console.log(customerOnMobileNo);
     if (customerOnMobileNo.result.length) {
       return res
         .status(httpCodes.BAD_REQUEST)
@@ -396,7 +445,7 @@ router.post("/", async (req, res) => {
           "customer",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -475,7 +524,7 @@ router.put("/:id", async (req, res) => {
           "customer",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }

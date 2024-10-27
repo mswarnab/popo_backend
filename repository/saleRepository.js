@@ -1,4 +1,67 @@
+const { formatDate } = require("../static/functions/getDate");
 const Sale = require("./schema/sale");
+
+const getTotalSaleAmountInLastWeek = async () => {
+  try {
+    let weekArrayDates = [];
+    let currentDate = new Date();
+    while (weekArrayDates.length < 7) {
+      currentDate.setDate(currentDate.getDate() - 1);
+      weekArrayDates = [...weekArrayDates, formatDate(currentDate)];
+    }
+    let count = [];
+    let result = [];
+    const promises = weekArrayDates.map(async (e, i) => {
+      const tempCount = await Sale.find({ dateOfSale: e }).countDocuments();
+      count = [...count, { date: e, count: tempCount }];
+      const tempResult = await Sale.find({ dateOfSale: e }).select(
+        "grandTotalAmount"
+      );
+      result = [...result, { date: e, result: tempResult }];
+    });
+
+    await Promise.all(promises);
+
+    return { count, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
+const getTotalSaleAmountInLastMonth = async (
+  startDate = new Date(),
+  endDate = new Date()
+) => {
+  try {
+    startDate.setMonth(startDate.getMonth() - 1);
+    const startDateFM = formatDate(startDate);
+    const endDateFM = formatDate(endDate);
+
+    const count = await Sale.find({
+      dateOfSale: { $gte: startDateFM, $lte: endDateFM },
+    }).countDocuments();
+
+    const result = await Sale.aggregate([
+      {
+        $match: {
+          dateOfSale: {
+            $gte: startDateFM,
+            $lte: endDateFM,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalSales: { $sum: "$grandTotalAmount" },
+        },
+      },
+    ]);
+    return { count, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
 
 const createSale = async (saleObject) => {
   try {
@@ -35,9 +98,8 @@ const getAllSale = async (
 
     const result = await Sale.find(filterObj)
       .sort(sortObject)
-      .skip(20 * parseInt(page))
+      .skip(20 * parseFloat(page))
       .limit(20);
-
     return { count, result };
   } catch (error) {
     return { errorStatus: true, error };
@@ -59,7 +121,7 @@ const getTotalSaleOfCustomers = async (id, page, filterDue) => {
         .equals(id)
         .where("cerditAmount")
         .equals(0)
-        .skip(20 * parseInt(page))
+        .skip(20 * parseFloat(page))
         .sortBy({ dateOfSale: -1 })
         .countDocuments();
       return { count, result };
@@ -73,7 +135,7 @@ const getTotalSaleOfCustomers = async (id, page, filterDue) => {
     const result = await Sale.find()
       .where("customerId")
       .equals(id)
-      .skip(20 * parseInt(page))
+      .skip(20 * parseFloat(page))
       .sortBy({ dateOfSale: -1 })
       .countDocuments();
     return { count, result };
@@ -100,7 +162,7 @@ const getSaleBasedOnCustomerId = async (page, id) => {
       .where("customerId")
       .equals(id)
       .sort({ dateOfSale: -1 })
-      .skip(20 * parseInt(page))
+      .skip(20 * parseFloat(page))
       .limit(20);
     return { result, count };
   } catch (error) {}
@@ -114,4 +176,6 @@ module.exports = {
   deleteSale,
   getTotalSaleOfCustomers,
   getSaleBasedOnCustomerId,
+  getTotalSaleAmountInLastWeek,
+  getTotalSaleAmountInLastMonth,
 };

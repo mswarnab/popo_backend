@@ -1,5 +1,3 @@
-const validateReqBody = require("../validation/validatePurchaseOrder");
-
 class PurchaseOrder {
   constructor(
     invoiceNumber,
@@ -10,6 +8,7 @@ class PurchaseOrder {
     sgst,
     cgst,
     paidAmount,
+    modeOfPayment,
     cerditAmount,
     dueDate,
     addLessAmount,
@@ -25,6 +24,7 @@ class PurchaseOrder {
     this.sgst = sgst.toString().trim();
     this.cgst = cgst.toString().trim();
     this.paidAmount = paidAmount.toString().trim();
+    this.modeOfPayment = modeOfPayment.toString().toUpperCase().trim();
     this.cerditAmount = cerditAmount.toString().trim();
     this.dueDate = dueDate.trim();
     this.addLessAmount = addLessAmount.trim();

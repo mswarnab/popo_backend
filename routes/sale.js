@@ -9,6 +9,118 @@ const ErrorObject = require("../static/classes/errorObject");
 const ResponseObject = require("../static/classes/ResponseObject");
 const validateReqBody = require("../static/validation/validateSale");
 
+router.get("/weeklysale", async (req, res) => {
+  try {
+    const { count, error, result, errorStatus } =
+      await saleRepository.getTotalSaleAmountInLastWeek();
+
+    if (errorStatus) {
+      return res
+        .status(httpCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "SA097",
+            "Something went wrong.",
+            "sale",
+            req.url,
+            req.method,
+            error
+          )
+        );
+    }
+    let amountArray = [];
+    result?.map((e) => {
+      let tempAmount = 0;
+      if (Array.isArray(e.result)) {
+        tempAmount = 0;
+        e.result.forEach((el) => {
+          tempAmount += el.grandTotalAmount;
+        });
+        amountArray = [...amountArray, { date: e.date, result: tempAmount }];
+      } else {
+        tempAmount += e.grandTotalAmount;
+      }
+    });
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Sale detail fetched successfully.",
+          "sale",
+          req.url,
+          { count, result: amountArray }
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "SA098",
+          "Something went wrong.",
+          "sale",
+          req.url,
+          req.method,
+          error
+        )
+      );
+  }
+});
+
+router.get("/totalsale", async (req, res) => {
+  try {
+    const { count, error, result, errorStatus } =
+      await saleRepository.getTotalSaleAmountInLastMonth();
+
+    if (errorStatus) {
+      return res
+        .status(httpCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "SA004",
+            "Something went wrong.",
+            "sale",
+            req.url,
+            req.method,
+            error
+          )
+        );
+    }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Sale detail fetched successfully.",
+          "sale",
+          req.url,
+          { count, result }
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "SA004",
+          "Something went wrong.",
+          "sale",
+          req.url,
+          req.method,
+          error
+        )
+      );
+  }
+});
+
 router.get("/", async (req, res) => {
   try {
     const {
@@ -24,15 +136,15 @@ router.get("/", async (req, res) => {
     let sortObject = {};
     let filterObject = {};
     if (sortByDateOfSale) {
-      sortObject.dateOfSale = parseInt(sortByDateOfSale);
+      sortObject.dateOfSale = parseFloat(sortByDateOfSale);
     }
 
     if (sortByGrandTotalAmount) {
-      sortObject.grandTotalAmount = parseInt(sortByGrandTotalAmount);
+      sortObject.grandTotalAmount = parseFloat(sortByGrandTotalAmount);
     }
 
     if (sortByCreditAmount) {
-      sortObject.creditAmount = parseInt(sortByCreditAmount);
+      sortObject.creditAmount = parseFloat(sortByCreditAmount);
     }
 
     if (filterByCustomerMobileNumber) {
@@ -44,7 +156,7 @@ router.get("/", async (req, res) => {
     }
 
     if (filterByCreditAmount) {
-      filterObject.creditAmount = filterByCreditAmount;
+      filterObject.cerditAmount = filterByCreditAmount;
     }
 
     const { count, error, result } = await saleRepository.getAllSale(
@@ -91,7 +203,7 @@ router.get("/", async (req, res) => {
           "sale",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -139,7 +251,7 @@ router.get("/:id", async (req, res) => {
           "sale",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }
@@ -225,7 +337,6 @@ router.post("/", async (req, res) => {
     let creditAmount = 0;
     let discountedAmount = 0;
     let grandTotalAmount = 0;
-    console.log(grandTotalAmount);
 
     const promises = products.map(async (e) => {
       const { productId, quantity, sellingPrice } = e;
@@ -235,23 +346,22 @@ router.post("/", async (req, res) => {
         );
 
         if (count) {
-          if (result.quantity < parseInt(quantity)) {
+          if (result.quantity < parseFloat(quantity)) {
             return { error: true, result };
           } else {
-            result.quantity -= parseInt(quantity);
+            result.quantity -= parseFloat(quantity);
             discountedAmount +=
-              (result.mrp - parseInt(sellingPrice)) * parseInt(quantity);
+              (result.mrp - parseFloat(sellingPrice)) * parseFloat(quantity);
             grandTotalAmount +=
-              parseInt(sellingPrice) * parseInt(quantity) +
-              parseInt(cgst) +
-              parseInt(sgst);
+              parseFloat(sellingPrice) * parseFloat(quantity) +
+              parseFloat(cgst) +
+              parseFloat(sgst);
             return { error: false, result };
           }
         }
       }
     });
     productArray = await Promise.all(promises);
-    console.log(productArray);
 
     let errorInProductArray = undefined;
 
@@ -263,7 +373,6 @@ router.post("/", async (req, res) => {
       } else return true;
     });
 
-    console.log(grandTotalAmount);
     if (errorInProductArray) {
       return res
         .status(httpCodes.BAD_REQUEST)
@@ -303,8 +412,8 @@ router.post("/", async (req, res) => {
           );
       }
     });
-    totalAmount = parseInt(grandTotalAmount) + parseInt(discountedAmount);
-    creditAmount = parseInt(grandTotalAmount) - parseInt(paidAmount);
+    totalAmount = parseFloat(grandTotalAmount) + parseFloat(discountedAmount);
+    creditAmount = parseFloat(grandTotalAmount) - parseFloat(paidAmount);
 
     const sale = new Sale(
       billNumber,
@@ -361,6 +470,31 @@ router.post("/", async (req, res) => {
         );
     }
 
+    // update customer's credit
+    customerObject.totalCreditAmount = creditAmount;
+    customerObject.__v += 1;
+
+    const customerUpdated = await customerRepository.updateCustomer(
+      customerObject._id,
+      customerObject
+    );
+
+    if (!customerUpdated) {
+      return res
+        .status(httpCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "SA099",
+            "Something went wrong.",
+            "sale",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
     // Successful response
     return res
       .status(httpCodes.OK)
@@ -375,7 +509,6 @@ router.post("/", async (req, res) => {
         )
       );
   } catch (error) {
-    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -386,7 +519,7 @@ router.post("/", async (req, res) => {
           "sale",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }

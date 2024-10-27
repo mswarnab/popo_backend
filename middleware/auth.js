@@ -8,8 +8,6 @@ const validateAuthorization = (req, res, next) => {
       return next();
     }
     if (!process.env.jwtPrivateKey) {
-      console.log("here");
-
       return res
         .status(httpCodes.INTERNAL_SERVER_ERROR)
         .send(
@@ -24,10 +22,9 @@ const validateAuthorization = (req, res, next) => {
           )
         );
     }
-    console.log("here");
 
-    const token = req.headers["x-auth-token"];
-    console.log("token", token);
+    // const token = req.headers["x-auth-token"];
+    const token = req.cookies.x_auth_token;
     if (!token) {
       return res
         .status(httpCodes.UNAUTHORIZED)

@@ -5,6 +5,7 @@ const supplierSchema = new mongoose.Schema({
   supplierContactNo: Number,
   supplierEmail: String,
   supplierAddress: String,
+  gstinNumber: String,
   lastPurchaseDate: String,
   totalCreditAmount: Number,
 });

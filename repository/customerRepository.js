@@ -1,5 +1,25 @@
 const Customer = require("./schema/customer");
 
+const getTotalCreditAmount = async () => {
+  try {
+    const count = await Customer.find({
+      totalCreditAmount: { $gt: 0 },
+    }).countDocuments();
+
+    const result = await Customer.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalDue: { $sum: "$totalCreditAmount" },
+        },
+      },
+    ]);
+    return { count, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
 const createCustomer = async (customerObject) => {
   try {
     const customer = new Customer(customerObject);
@@ -30,7 +50,7 @@ const getSingleCustomerByMobileNo = async (mobileNo) => {
   try {
     const result = await Customer.find()
       .where("customerContactNo")
-      .equals(parseInt(mobileNo));
+      .equals(parseFloat(mobileNo));
     return { count: 1, result };
   } catch (error) {
     return { errorStatus: true, error };
@@ -43,7 +63,7 @@ const getAllCustomer = async (page = 0) => {
 
     const result = await Customer.find()
       .sort({ lastPurchaseDate: -1 })
-      .skip(20 * parseInt(page))
+      .skip(20 * parseFloat(page))
       .limit(20);
     return { count, result };
   } catch (error) {
@@ -107,7 +127,7 @@ const getCustomersHavingCredit = async (page) => {
       .where("totalCreditAmount")
       .gt(0)
       .sort({ totalCreditAmount: -1 })
-      .skip(20 * parseInt(page))
+      .skip(20 * parseFloat(page))
       .limit(20);
     return { count, result };
   } catch (error) {
@@ -125,4 +145,5 @@ module.exports = {
   getSingleCustomerByMobileNo,
   getCustomersOnRegex,
   getCustomersHavingCredit,
+  getTotalCreditAmount,
 };

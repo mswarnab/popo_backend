@@ -9,6 +9,7 @@ const purchaseOrdertSchema = new mongoose.Schema({
   sgst: String,
   cgst: String,
   paidAmount: Number,
+  modeOfPayment: String,
   cerditAmount: Number,
   dueDate: String,
   addLessAmount: String,

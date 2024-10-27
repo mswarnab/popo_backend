@@ -1,5 +1,25 @@
 const Supplier = require("./schema/supplier");
 
+const getTotalCreditAmount = async () => {
+  try {
+    const count = await Supplier.find({
+      totalCreditAmount: { $gt: 0 },
+    }).countDocuments();
+
+    const result = await Supplier.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalDue: { $sum: "$totalCreditAmount" },
+        },
+      },
+    ]);
+    return { count, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
 const createSupplier = async (supplierObject) => {
   try {
     const supplier = new Supplier(supplierObject);
@@ -8,7 +28,16 @@ const createSupplier = async (supplierObject) => {
     return { errorStatus: true, error };
   }
 };
-
+const getSingleSupplierByMobileNo = async (mobileNo) => {
+  try {
+    const result = await Supplier.find()
+      .where("supplierContactNo")
+      .equals(parseFloat(mobileNo));
+    return { count: 1, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
 const updateSupplier = async (id, supplierObject) => {
   try {
     return await Supplier.findByIdAndUpdate(id, supplierObject);
@@ -32,7 +61,7 @@ const getAllSupplier = async (page = 0) => {
 
     const result = await Supplier.find()
       .sort({ lastPurchaseDate: -1 })
-      .skip(20 * parseInt(page))
+      .skip(20 * parseFloat(page))
       .limit(20);
     return { count, result };
   } catch (error) {
@@ -78,7 +107,6 @@ const getSuppliersOnRegex = async (pattern) => {
     const result = await Supplier.find({
       supplierName: { $regex: pattern, $options: "i" },
     }).limit(20);
-    console.log(result);
 
     return { count, result };
   } catch (error) {
@@ -96,7 +124,7 @@ const getSuppliersHavingCredit = async (page) => {
       .where("totalCreditAmount")
       .gt(0)
       .sort({ totalCreditAmount: -1 })
-      .skip(20 * parseInt(page))
+      .skip(20 * parseFloat(page))
       .limit(20);
     return { count, result };
   } catch (error) {
@@ -113,4 +141,6 @@ module.exports = {
   getSearchResult,
   getSuppliersOnRegex,
   getSuppliersHavingCredit,
+  getSingleSupplierByMobileNo,
+  getTotalCreditAmount,
 };

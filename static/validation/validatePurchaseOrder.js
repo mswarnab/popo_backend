@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { modeOfPayment } = require("../../static");
 
 const validateReqBody = (
   invoiceNumber,
@@ -9,6 +10,7 @@ const validateReqBody = (
   sgst,
   cgst,
   paidAmount,
+  modeOfPayment,
   cerditAmount,
   dueDate,
   addLessAmount,
@@ -25,6 +27,7 @@ const validateReqBody = (
     sgst: Joi.number(),
     cgst: Joi.number(),
     paidAmount: Joi.number().required(),
+    modeOfPayment: Joi.string().required(),
     cerditAmount: Joi.number().required(),
     dueDate: Joi.date().required(),
     grandTotalAmount: Joi.number().required(),
@@ -42,6 +45,7 @@ const validateReqBody = (
     sgst,
     cgst,
     paidAmount,
+    modeOfPayment,
     cerditAmount,
     dueDate,
     addLessAmount,
