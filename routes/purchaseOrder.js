@@ -312,7 +312,7 @@ router.post("/", async (req, res) => {
         );
     }
 
-    if (!paidAmount || isNaN(paidAmount)) {
+    if (isNaN(paidAmount)) {
       return res
         .status(httpCodes.BAD_REQUEST)
         .send(
