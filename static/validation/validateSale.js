@@ -20,7 +20,7 @@ const validateReqBody = (
     billNumber: Joi.string().required(),
     customerId: Joi.string().required(),
     customerMobileNo: Joi.string().required(),
-    dateOfSale: Joi.date().required(),
+    dateOfSale: Joi.string().required(),
     products: Joi.array().required(),
     totalAmount: Joi.number().required(),
     cerditAmount: Joi.number().required(),

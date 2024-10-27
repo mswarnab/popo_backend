@@ -21,7 +21,7 @@ const validateReqBody = (
   const schema = Joi.object({
     invoiceNumber: Joi.string().required(),
     supplierId: Joi.string().required(),
-    dateOfPruchase: Joi.date().required(),
+    dateOfPruchase: Joi.string().required(),
     totalAmount: Joi.number().required(),
     discount: Joi.number(),
     sgst: Joi.number(),
@@ -29,7 +29,7 @@ const validateReqBody = (
     paidAmount: Joi.number().required(),
     modeOfPayment: Joi.string().required(),
     cerditAmount: Joi.number().required(),
-    dueDate: Joi.date().required(),
+    dueDate: Joi.string().required(),
     grandTotalAmount: Joi.number().required(),
     addLessAmount: Joi.string(),
     crDrNote: Joi.string(),

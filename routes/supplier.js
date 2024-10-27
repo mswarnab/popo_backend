@@ -318,7 +318,6 @@ router.post("/", async (req, res) => {
       supplierEmail,
       supplierAddress,
       gstinNumber,
-      totalCreditAmount,
     } = req.body;
     const supplier = new Supplier(
       supplierName,
@@ -448,6 +447,26 @@ router.put("/:id", async (req, res) => {
 
     supplier.__v = parseFloat(supplier.__v) + 1;
 
+    const supplierOnMobileNo =
+      await supplierRepository.getSingleSupplierByMobileNo(supplierContactNo);
+
+    if (supplierOnMobileNo.result.length) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "SU097",
+            "Another supplier with this mobile number already exists - " +
+              supplierContactNo,
+            "supplier",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
     //otherwise purchase order Repository is invoked.
     const supplierObject = await supplierRepository.updateSupplier(
       id,
@@ -465,7 +484,7 @@ router.put("/:id", async (req, res) => {
             "supplier",
             req.url,
             req.method,
-            null
+            supplierObject?.error
           )
         );
     }
