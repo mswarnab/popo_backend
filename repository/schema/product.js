@@ -12,7 +12,7 @@ const productSchema = new mongoose.Schema({
   dateOfPruchase: String,
   mfgDate: String,
   expDate: String,
-  purcahseQuantity: Number,
+  purchaseQuantity: Number,
   quantity: Number,
   rate: Number,
   sgst: Number,
