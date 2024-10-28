@@ -9,10 +9,11 @@ const validateReqBody = require("../static/validation/validateProduct");
 
 router.get("/getexpiredproducts", async (req, res) => {
   try {
-    const { category, duration } = req.query;
+    const { category, duration, page } = req.query;
     const { count, error, result } = await productRepository.getExpiredProducts(
       category,
-      duration
+      duration,
+      page
     );
 
     if (!count) {

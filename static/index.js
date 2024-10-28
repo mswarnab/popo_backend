@@ -10,7 +10,7 @@ module.exports = {
     BAD_REQUEST: 400,
   },
   routes: {
-    AUTH: "/login",
+    AUTH: "/auth",
     SALES: "/sales",
     STOCK: "/stock",
     PURCHASEORDER: "/purchaseorder",

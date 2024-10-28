@@ -72,52 +72,97 @@ router.get("/", (req, res) => {
       );
   }
 });
-router.post("/", async (req, res) => {
-  const {
-    user: { userName, password },
-  } = req.body;
-  if (
-    userName &&
-    password &&
-    userName == process.env.appUserName &&
-    password == process.env.userPassword
-  ) {
-    const token = generateToken(userName);
+router.post("/login", async (req, res) => {
+  try {
+    const {
+      user: { userName, password },
+    } = req.body;
+    if (
+      userName &&
+      password &&
+      userName == process.env.appUserName &&
+      password == process.env.userPassword
+    ) {
+      const token = generateToken(userName);
 
+      return res
+        .cookie("x_auth_token", token, {
+          httpOnly: true,
+          secure: false,
+          maxAge: 86400000,
+          sameSite: "lax",
+          // sameSite: "Strict", // Prevent CSRF
+        })
+        .status(httpCodes.OK)
+        .send(
+          new ResponseObject(
+            httpCodes.OK,
+            req.method,
+            "User is successfully logged in",
+            "auth",
+            req.url,
+            userName
+          )
+        );
+    }
     return res
-      .header("x-auth-token", token)
-      .cookie("x_auth_token", token, {
-        httpOnly: true,
-        secure: false,
-        maxAge: 86400000,
-        sameSite: "lax",
-        // sameSite: "Strict", // Prevent CSRF
-      })
+      .status(httpCodes.BAD_REQUEST)
+      .send(
+        new ErrorObject(
+          httpCodes.BAD_REQUEST,
+          "AUTH04",
+          "Invalid Username or password provided",
+          "/",
+          req.url,
+          req.method,
+          null
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.UNAUTHORIZED)
+      .send(
+        new ErrorObject(
+          httpCodes.UNAUTHORIZED,
+          "AU010",
+          "User is unauthorized - Invalid token provided",
+          "/",
+          req.url,
+          req.method,
+          null
+        )
+      );
+  }
+});
+router.post("/logout", (req, res) => {
+  try {
+    return res
+      .clearCookie("x_auth_token")
       .status(httpCodes.OK)
       .send(
         new ResponseObject(
           httpCodes.OK,
           req.method,
-          "User is successfully logged in",
+          "User is successfully logged out",
           "auth",
           req.url,
-          userName
+          null
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "AUTH09",
+          "Something Went wrong",
+          "/",
+          req.url,
+          req.method,
+          error
         )
       );
   }
-  return res
-    .status(httpCodes.BAD_REQUEST)
-    .send(
-      new ErrorObject(
-        httpCodes.BAD_REQUEST,
-        "AUTH04",
-        "Invalid Username or password provided",
-        "/",
-        req.url,
-        req.method,
-        null
-      )
-    );
 });
-
 module.exports = router;

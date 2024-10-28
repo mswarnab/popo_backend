@@ -4,7 +4,7 @@ const { httpCodes, routes } = require("../static");
 
 const validateAuthorization = (req, res, next) => {
   try {
-    if (req.url == routes.AUTH) {
+    if (req.url.includes(routes.AUTH)) {
       return next();
     }
     if (!process.env.jwtPrivateKey) {

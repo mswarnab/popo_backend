@@ -73,7 +73,7 @@ const deleteProductByPurchaseOrder = async (id) => {
 
 const getExpiredProducts = async (
   category = productCategory,
-  duration = 300,
+  duration = 3,
   page = 0
 ) => {
   try {
