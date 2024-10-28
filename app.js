@@ -17,9 +17,14 @@ const dayjs = require("dayjs");
 const { routes } = require("./static");
 const validateAuthorization = require("./middleware/auth");
 
-app.use(
-  cors({ origin: "https://titirpetshop.onrender.com/", credentials: true })
-);
+const corsOptions = {
+  origin: "https://titirpetshop.onrender.com/",
+  methods: "GET,PUT,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 app.use(cookieParser());
 
 app.use(validateAuthorization);
