@@ -24,7 +24,7 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 
-app.use(cors(corsOptions));
+app.use(cors({ origin: true }));
 app.use(cookieParser());
 
 app.use(validateAuthorization);
