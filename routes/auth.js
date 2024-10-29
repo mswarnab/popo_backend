@@ -88,10 +88,9 @@ router.post("/login", async (req, res) => {
       return res
         .cookie("x_auth_token", token, {
           httpOnly: true,
-          secure: false,
           maxAge: 86400000,
-          sameSite: "lax",
-          // sameSite: "Strict", // Prevent CSRF
+          secure: true, // Ensures the cookie is sent over HTTPS
+          sameSite: "None", // Allow cross-site cookies
         })
         .status(httpCodes.OK)
         .send(
