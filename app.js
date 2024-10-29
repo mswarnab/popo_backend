@@ -19,12 +19,16 @@ const validateAuthorization = require("./middleware/auth");
 
 const corsOptions = {
   origin: "https://titirpetshop.onrender.com/",
-  methods: "GET,PUT,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
 };
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://titirpetshop-1.vercel.app", // Use your actual frontend URL
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 
 app.use(validateAuthorization);
