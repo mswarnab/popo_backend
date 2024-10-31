@@ -92,7 +92,7 @@ router.post("/login", async (req, res) => {
           secure: true,
 
           // Ensures the cookie is sent over HTTPS
-          // sameSite: "none", // Allow cross-site cookies
+          sameSite: "none", // Allow cross-site cookies
         })
         .status(httpCodes.OK)
         .send(
