@@ -89,8 +89,10 @@ router.post("/login", async (req, res) => {
         .cookie("x_auth_token", token, {
           httpOnly: true,
           maxAge: 86400000,
-          secure: true, // Ensures the cookie is sent over HTTPS
-          sameSite: "None", // Allow cross-site cookies
+          secure: true,
+
+          // Ensures the cookie is sent over HTTPS
+          // sameSite: "none", // Allow cross-site cookies
         })
         .status(httpCodes.OK)
         .send(
@@ -118,6 +120,7 @@ router.post("/login", async (req, res) => {
         )
       );
   } catch (error) {
+    console.log(error);
     return res
       .status(httpCodes.UNAUTHORIZED)
       .send(
