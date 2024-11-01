@@ -25,7 +25,7 @@ const corsOptions = {
 
 app.use(
   cors({
-    origin: "https://titirpetshop-1.vercel.app", // Use your actual frontend URL
+    origin: "https://titirpetshop-1.vercel.app",
     credentials: true,
   })
 );
