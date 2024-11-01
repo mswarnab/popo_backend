@@ -492,6 +492,45 @@ router.put("/:id", async (req, res) => {
         );
     }
 
+    const existingCustomer = await customerRepository.getSingleCustomer(id);
+
+    if (!existingCustomer) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "CU067",
+            "Customer does not exist",
+            "customer",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    if (existingCustomer.customerContactNo != customerContactNo) {
+      const customerBasedOnContractNo =
+        await customerRepository.getSingleCustomerByMobileNo(customerContactNo);
+
+      if (customerBasedOnContractNo) {
+        return res
+          .status(httpCodes.BAD_REQUEST)
+          .send(
+            new ErrorObject(
+              httpCodes.BAD_REQUEST,
+              "CU097",
+              "Another Customer with this mobile number already exists - " +
+                supplierContactNo,
+              "customer",
+              req.url,
+              req.method,
+              null
+            )
+          );
+      }
+    }
     customer.__v += 1;
 
     //otherwise purchase order Repository is invoked.

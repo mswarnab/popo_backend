@@ -23,9 +23,15 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 
+// app.use(
+//   cors({
+//     origin: "https://titirpetshop-1.vercel.app",
+//     credentials: true,
+//   })
+// );
 app.use(
   cors({
-    origin: "https://titirpetshop-1.vercel.app",
+    origin: "http://localhost:3000/",
     credentials: true,
   })
 );

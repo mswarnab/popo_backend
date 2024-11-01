@@ -445,20 +445,16 @@ router.put("/:id", async (req, res) => {
         );
     }
 
-    supplier.__v = parseFloat(supplier.__v) + 1;
+    const existingSupplier = await supplierRepository.getSingleSupplier(id);
 
-    const supplierOnMobileNo =
-      await supplierRepository.getSingleSupplierByMobileNo(supplierContactNo);
-
-    if (supplierOnMobileNo.result.length) {
+    if (!existingSupplier) {
       return res
         .status(httpCodes.BAD_REQUEST)
         .send(
           new ErrorObject(
             httpCodes.BAD_REQUEST,
-            "SU097",
-            "Another supplier with this mobile number already exists - " +
-              supplierContactNo,
+            "SU067",
+            "Supplier Does not exist",
             "supplier",
             req.url,
             req.method,
@@ -466,6 +462,29 @@ router.put("/:id", async (req, res) => {
           )
         );
     }
+
+    if (existingSupplier.supplierContactNo != supplierContactNo) {
+      const supplierOnMobileNo =
+        await supplierRepository.getSingleSupplierByMobileNo(supplierContactNo);
+      if (supplierOnMobileNo) {
+        return res
+          .status(httpCodes.BAD_REQUEST)
+          .send(
+            new ErrorObject(
+              httpCodes.BAD_REQUEST,
+              "SU097",
+              "Another supplier with this mobile number already exists - " +
+                supplierContactNo,
+              "supplier",
+              req.url,
+              req.method,
+              null
+            )
+          );
+      }
+    }
+
+    supplier.__v = parseFloat(supplier.__v) + 1;
 
     //otherwise purchase order Repository is invoked.
     const supplierObject = await supplierRepository.updateSupplier(
