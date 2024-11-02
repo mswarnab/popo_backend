@@ -117,9 +117,26 @@ const getSearchResult = async (pattern) => {
 
     const result = await Product.find({
       productName: { $regex: pattern, $options: "i" },
-    })
-      .select(["productName"])
-      .limit(10);
+    }).distinct("productName");
+    // .limit(10);
+
+    return { count, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
+const getSearchResultFull = async (pattern) => {
+  try {
+    const count = await Product.find({
+      productName: { $regex: pattern, $options: "i" },
+      quantity: { $gt: 0 },
+    }).countDocuments();
+
+    const result = await Product.find({
+      productName: { $regex: pattern, $options: "i" },
+      quantity: { $gt: 0 },
+    });
 
     return { count, result };
   } catch (error) {
@@ -165,4 +182,5 @@ module.exports = {
   getSearchResult,
   getProductsOnRegex,
   deleteProductByPurchaseOrder,
+  getSearchResultFull,
 };

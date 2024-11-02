@@ -15,6 +15,7 @@ class Sale {
     cerditAmount,
     dueDate,
     grandTotalAmount,
+    totalProfit,
     __v
   ) {
     this.billNumber = billNumber.trim();
@@ -30,6 +31,7 @@ class Sale {
     this.cerditAmount = cerditAmount.toString().trim();
     this.dueDate = dueDate.trim();
     this.grandTotalAmount = grandTotalAmount.toString().trim();
+    this.totalProfit = totalProfit.trim();
     this.__v = __v.toString().trim();
   }
 }

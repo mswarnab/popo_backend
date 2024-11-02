@@ -2,6 +2,7 @@ class PurchaseOrder {
   constructor(
     invoiceNumber,
     supplierId,
+    suppplierName,
     dateOfPruchase,
     totalAmount,
     discount,
@@ -18,6 +19,7 @@ class PurchaseOrder {
   ) {
     this.invoiceNumber = invoiceNumber.trim();
     this.supplierId = supplierId.trim();
+    this.suppplierName = suppplierName.trim();
     this.dateOfPruchase = dateOfPruchase.trim();
     this.totalAmount = totalAmount.toString().trim();
     this.discount = discount.trim();

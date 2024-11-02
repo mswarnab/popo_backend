@@ -311,7 +311,7 @@ router.post("/", async (req, res) => {
           )
         );
     }
-
+    // Need to fix
     if (!customerObject) {
       customerObject = customer;
     }
@@ -337,6 +337,7 @@ router.post("/", async (req, res) => {
     let creditAmount = 0;
     let discountedAmount = 0;
     let grandTotalAmount = 0;
+    let totalProfit = 0;
 
     const promises = products.map(async (e) => {
       const { productId, quantity, sellingPrice } = e;
@@ -356,6 +357,13 @@ router.post("/", async (req, res) => {
               parseFloat(sellingPrice) * parseFloat(quantity) +
               parseFloat(cgst) +
               parseFloat(sgst);
+            totalProfit =
+              parseFloat(totalProfit) +
+              (parseFloat(sellingPrice) -
+                (parseFloat(result.rate) +
+                  parseFloat(result.sgst) +
+                  parseFloat(result.cgst))) *
+                parseFloat(quantity);
             return { error: false, result };
           }
         }
@@ -429,6 +437,7 @@ router.post("/", async (req, res) => {
       creditAmount,
       dueDate,
       grandTotalAmount,
+      totalProfit,
       (__v = 0)
     );
 

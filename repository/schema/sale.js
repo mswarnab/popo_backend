@@ -21,6 +21,7 @@ const saleSchema = new mongoose.Schema({
   cerditAmount: { type: Number, default: 0 },
   dueDate: { type: String, default: "99999999" },
   grandTotalAmount: { type: Number, required: true },
+  totalProfit: Number,
 });
 
 module.exports = mongoose.model("Sale", saleSchema);

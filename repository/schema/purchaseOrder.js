@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const purchaseOrdertSchema = new mongoose.Schema({
   invoiceNumber: { type: String, unique: true },
   supplierId: String,
+  supplierName: String,
   dateOfPruchase: String,
   totalAmount: Number,
   discount: Number,

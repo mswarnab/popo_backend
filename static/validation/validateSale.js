@@ -14,6 +14,7 @@ const validateReqBody = (
   cerditAmount,
   dueDate,
   grandTotalAmount,
+  totalProfit,
   __v
 ) => {
   const schema = Joi.object({
@@ -30,6 +31,7 @@ const validateReqBody = (
     discountedAmount: Joi.number().required(),
     grandTotalAmount: Joi.number().required(),
     dueDate: Joi.string().required(),
+    totalProfit: Joi.number().required(),
     __v: Joi.number().required(),
   });
 
@@ -47,6 +49,7 @@ const validateReqBody = (
     cerditAmount,
     dueDate,
     grandTotalAmount,
+    totalProfit,
     __v
   ));
 };

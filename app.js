@@ -31,13 +31,13 @@ const corsOptions = {
 // );
 app.use(
   cors({
-    origin: "http://localhost:3000/",
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
 app.use(cookieParser());
 
-app.use(validateAuthorization);
+// app.use(validateAuthorization);
 
 app.use(routes.AUTH, authRouter);
 app.use(routes.STOCK, stockRouter);

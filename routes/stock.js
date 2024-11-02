@@ -113,6 +113,57 @@ router.get("/search", async (req, res) => {
   }
 });
 
+router.get("/searchfullproduct", async (req, res) => {
+  try {
+    const { pattern } = req.query;
+    const { count, error, result } =
+      await productRepository.getSearchResultFull(pattern);
+
+    if (!count) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "ST003",
+            "Stock not found.",
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Stock details fetched successfully.",
+          "stock",
+          req.url,
+          { count, result }
+        )
+      );
+  } catch (error) {
+    return res.status(
+      httpCodes.INTERNAL_SERVER_ERROR.send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "ST004",
+          "Something Went Wrong",
+          "stock",
+          req.url,
+          req.method,
+          error
+        )
+      )
+    );
+  }
+});
+
 router.get("/findproductwithname", async (req, res) => {
   try {
     const { pattern, page } = req.query;

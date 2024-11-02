@@ -4,6 +4,7 @@ const { modeOfPayment } = require("../../static");
 const validateReqBody = (
   invoiceNumber,
   supplierId,
+  supplierName,
   dateOfPruchase,
   totalAmount,
   discount,
@@ -21,6 +22,7 @@ const validateReqBody = (
   const schema = Joi.object({
     invoiceNumber: Joi.string().required(),
     supplierId: Joi.string().required(),
+    supplierName: Joi.string().required(),
     dateOfPruchase: Joi.string().required(),
     totalAmount: Joi.number().required(),
     discount: Joi.number(),
@@ -39,6 +41,7 @@ const validateReqBody = (
   return ({ error, value, warning } = schema.validate(
     invoiceNumber,
     supplierId,
+    supplierName,
     dateOfPruchase,
     totalAmount,
     discount,
