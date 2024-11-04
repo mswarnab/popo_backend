@@ -2,7 +2,7 @@ class PurchaseOrder {
   constructor(
     invoiceNumber,
     supplierId,
-    suppplierName,
+    supplierName,
     dateOfPruchase,
     totalAmount,
     discount,
@@ -17,10 +17,10 @@ class PurchaseOrder {
     grandTotalAmount,
     __v
   ) {
-    this.invoiceNumber = invoiceNumber.trim();
-    this.supplierId = supplierId.trim();
-    this.suppplierName = suppplierName.trim();
-    this.dateOfPruchase = dateOfPruchase.trim();
+    this.invoiceNumber = invoiceNumber.toString().trim();
+    this.supplierId = supplierId.toString().trim();
+    this.supplierName = supplierName.toString().trim();
+    this.dateOfPruchase = dateOfPruchase.toString().trim();
     this.totalAmount = totalAmount.toString().trim();
     this.discount = discount.trim();
     this.sgst = sgst.toString().trim();
@@ -28,9 +28,9 @@ class PurchaseOrder {
     this.paidAmount = paidAmount.toString().trim();
     this.modeOfPayment = modeOfPayment.toString().toUpperCase().trim();
     this.cerditAmount = cerditAmount.toString().trim();
-    this.dueDate = dueDate.trim();
-    this.addLessAmount = addLessAmount.trim();
-    this.crDrNote = crDrNote.trim();
+    this.dueDate = dueDate.toString().trim();
+    this.addLessAmount = addLessAmount.toString().trim();
+    this.crDrNote = crDrNote.toString().trim();
     this.grandTotalAmount = grandTotalAmount.toString().trim();
     this.__v = __v;
   }

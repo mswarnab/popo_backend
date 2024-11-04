@@ -23,7 +23,7 @@ const getTotalCreditAmount = async () => {
 const createCustomer = async (customerObject) => {
   try {
     const customer = new Customer(customerObject);
-    await customer.save();
+    return await customer.save();
   } catch (error) {
     return { errorStatus: true, error };
   }
@@ -48,10 +48,10 @@ const getSingleCustomer = async (id) => {
 
 const getSingleCustomerByMobileNo = async (mobileNo) => {
   try {
-    const result = await Customer.find()
-      .where("customerContactNo")
-      .equals(parseFloat(mobileNo));
-    return { count: 1, result };
+    const result = await Customer.find({
+      customerContactNo: parseInt(mobileNo),
+    });
+    return { count: result.length, result };
   } catch (error) {
     return { errorStatus: true, error };
   }

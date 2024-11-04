@@ -258,7 +258,7 @@ router.post("/", async (req, res) => {
         productName,
         category,
         supplierId,
-        supplierName,
+        supplierDetails.result.supplierName,
         purchaseOrderIdExisting,
         mfrCode,
         hsnCode,
@@ -328,10 +328,10 @@ router.post("/", async (req, res) => {
         );
     }
     const creditAmount = grandTotalAmount - parseFloat(paidAmount);
-
     const purchaseOrder = new PurchaseOrder(
       invoiceNumber,
       supplierId,
+      supplierDetails.result.supplierName,
       dateOfPruchase,
       totalAmount,
       discountPO.toString(),
@@ -449,6 +449,7 @@ router.post("/", async (req, res) => {
         )
       );
   } catch (error) {
+    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -531,8 +532,52 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const purchaseOrder = await purchaseOrderRepository.deletePurchaseOrder(id);
+    const productArray = await productRepository.getAllProductsOnPurchaseOrder(
+      id
+    );
+    if (!productArray.count) {
+      return res
+        .status(httpCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "PO093",
+            "Something Went wrong. " + id,
+            "purchaseOrder",
+            req.url,
+            req.method,
+            id
+          )
+        );
+    }
+
+    const errorInProductArray = { error: false, product: {} };
+    productArray.forEach(({ result }) => {
+      if (result.purchaseQuantity != result.quantity) {
+        errorInProductArray.error = true;
+        errorInProductArray.product = e;
+      }
+    });
+
+    if (errorInProductArray.error) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "PO094",
+            "Already sold items from this purchase order. Purchase quantity and available quantity is different for purchase order Id. " +
+              id,
+            "purchaseOrder",
+            req.url,
+            req.method,
+            errorInProductArray.product
+          )
+        );
+    }
+
     const stock = await productRepository.deleteProductByPurchaseOrder(id);
+    const purchaseOrder = await purchaseOrderRepository.deletePurchaseOrder(id);
     return res
       .status(httpCodes.OK)
       .send(

@@ -171,6 +171,24 @@ const getProductsOnRegex = async (pattern, page = 0) => {
   }
 };
 
+const getAllProductsOnPurchaseOrder = async (purchaseOrderId) => {
+  try {
+    const result = await Product.find({ purchaseOrderId });
+    return { count: result.length, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
+const getAllProductsBasedOnIdArray = async (productArray) => {
+  try {
+    const result = await Product.find({ _id: { $in: productArray } }).lean();
+    return { count: result.length, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
 module.exports = {
   getAllProducts,
   getSingleProduct,
@@ -183,4 +201,6 @@ module.exports = {
   getProductsOnRegex,
   deleteProductByPurchaseOrder,
   getSearchResultFull,
+  getAllProductsOnPurchaseOrder,
+  getAllProductsBasedOnIdArray,
 };

@@ -2,12 +2,18 @@ const router = require("express").Router();
 const saleRepository = require("../repository/saleRepository");
 const customerRepository = require("../repository/customerRepository");
 const Sale = require("../static/classes/sale");
-const dummyCustomerIdentifier = "9999999999";
+const dummyCustomerIdentifier = "No DATA";
+const dummyMobileNumber = "9999999999";
+
 const productRepository = require("../repository/productRepository");
 const { httpCodes } = require("../static");
 const ErrorObject = require("../static/classes/errorObject");
 const ResponseObject = require("../static/classes/ResponseObject");
 const validateReqBody = require("../static/validation/validateSale");
+const validateReqBodyCustomer = require("../static/validation/validateCustomer");
+
+const Customer = require("../static/classes/customer");
+const dayjs = require("dayjs");
 
 router.get("/weeklysale", async (req, res) => {
   try {
@@ -121,6 +127,92 @@ router.get("/totalsale", async (req, res) => {
   }
 });
 
+router.get("/profit", async (req, res) => {
+  try {
+    const { duration } = req.query;
+    const currDate = dayjs().format("YYYYMMDD");
+    let dateArray = [currDate];
+
+    if (duration.toUpperCase() == "DAILY") {
+      var tempDate = currDate;
+      for (let i = 0; i < 6; i++) {
+        tempDate = dayjs(tempDate).subtract(1, "day").format("YYYYMMDD");
+        dateArray = [...dateArray, tempDate];
+      }
+    }
+
+    if (duration.toUpperCase() == "MONTHLY") {
+      var tempDate = currDate;
+      for (let i = 0; i < 6; i++) {
+        tempDate = dayjs(tempDate).subtract(1, "month").format("YYYYMMDD");
+        dateArray = [...dateArray, tempDate];
+      }
+    }
+    if (duration.toUpperCase() == "WEEKLY") {
+      var tempDate = currDate;
+      for (let i = 0; i < 6; i++) {
+        tempDate = dayjs(tempDate).subtract(7, "days").format("YYYYMMDD");
+        dateArray = [...dateArray, tempDate];
+      }
+    }
+
+    if (duration.toUpperCase() == "QUARTERLY") {
+      var tempDate = currDate;
+      for (let i = 0; i < 6; i++) {
+        tempDate = dayjs(tempDate).subtract(3, "months").format("YYYYMMDD");
+        dateArray = [...dateArray, tempDate];
+      }
+    }
+
+    if (duration.toUpperCase() == "YEARLY") {
+      var tempDate = currDate;
+      for (let i = 0; i < 6; i++) {
+        tempDate = dayjs(tempDate).subtract(1, "year").format("YYYYMMDD");
+        dateArray = [...dateArray, tempDate];
+      }
+    }
+
+    let dataArray = [];
+    for (let i = 0; i < 6; i++) {
+      const tempArray = await saleRepository.getTotalProfitBasedOnDuration(
+        dateArray[i],
+        dateArray[i + 1]
+      );
+      dataArray = [
+        ...dataArray,
+        { date: dateArray[i], result: tempArray?.result },
+      ];
+    }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Sale details fetched successfully.",
+          "sale",
+          req.url,
+          { count: 5, result: dataArray }
+        )
+      );
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "SA041",
+          "Something went wrong.",
+          "sale",
+          req.url,
+          req.method,
+          error.message
+        )
+      );
+  }
+});
 router.get("/", async (req, res) => {
   try {
     const {
@@ -180,6 +272,7 @@ router.get("/", async (req, res) => {
           )
         );
     }
+
     return res
       .status(httpCodes.OK)
       .send(
@@ -193,6 +286,7 @@ router.get("/", async (req, res) => {
         )
       );
   } catch (error) {
+    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -228,6 +322,54 @@ router.get("/:id", async (req, res) => {
           )
         );
     }
+
+    // const { products } = saleDetail;
+    // let productArray = [];
+    // products.forEach((e) => {
+    //   productArray = [...productArray, e.productId];
+    // });
+
+    // const productsResult = await productRepository.getAllProductsBasedOnIdArray(
+    //   productArray
+    // );
+
+    // if (!productsResult.count) {
+    //   return res
+    //     .status(httpCodes.NOT_FOUND)
+    //     .send(
+    //       new ErrorObject(
+    //         httpCodes.NOT_FOUND,
+    //         "SA053",
+    //         "Something went wrong.",
+    //         "sale",
+    //         req.url,
+    //         req.method,
+    //         productsResult
+    //       )
+    //     );
+    // }
+
+    // let combinedProductArray = [];
+
+    // productsResult.result.forEach((e) => {
+    //   const tempObject = products.find((el) => e._id == el.productId);
+    //   const { _id, mrp, rate, sgst, cgst, productName } = e;
+    //   const tempObject2 = {
+    //     productId: _id,
+    //     productName,
+    //     productPurchasePrice: rate + cgst + sgst,
+    //     productMrp: mrp,
+    //     soldQuantity: tempObject.quantity,
+    //     sellingPrice: tempObject.sellingPrice,
+    //   };
+    //   combinedProductArray = [...combinedProductArray, tempObject2];
+    // });
+
+    // saleObject = {
+    //   ...saleDetail.toObject(),
+    //   products: combinedProductArray,
+    // };
+
     return res
       .status(httpCodes.OK)
       .send(
@@ -241,6 +383,7 @@ router.get("/:id", async (req, res) => {
         )
       );
   } catch (error) {
+    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -263,6 +406,8 @@ router.post("/", async (req, res) => {
       billNumber,
       customerId,
       customerMobileNo,
+      customerName,
+      customerAddress,
       dateOfSale,
       products,
       cgst,
@@ -270,51 +415,6 @@ router.post("/", async (req, res) => {
       paidAmount,
       dueDate,
     } = req.body;
-
-    let customerObject = {};
-    if (!customerMobileNo.trim() && !customerId.trim()) {
-      if (creditAmount) {
-        return res
-          .status(httpCodes.NOT_FOUND)
-          .send(
-            new ErrorObject(
-              httpCodes.NOT_FOUND,
-              "SA005",
-              "Customer not found. Please create customer first if credit amount is > 0.",
-              "sale",
-              req.url,
-              req.method,
-              null
-            )
-          );
-      }
-      customerMobileNo = dummyCustomerIdentifier;
-      customerId = dummyCustomerIdentifier;
-    } else {
-      customerObject = await customerRepository.getSingleCustomerByMobileNo(
-        customerMobileNo
-      );
-    }
-
-    if (!customerObject && customerId != dummyCustomerIdentifier) {
-      return res
-        .status(httpCodes.NOT_FOUND)
-        .send(
-          new ErrorObject(
-            httpCodes.NOT_FOUND,
-            "SA006",
-            "Customer not found.",
-            "sale",
-            req.url,
-            req.method,
-            null
-          )
-        );
-    }
-    // Need to fix
-    if (!customerObject) {
-      customerObject = customer;
-    }
 
     if (!products) {
       return res
@@ -338,6 +438,7 @@ router.post("/", async (req, res) => {
     let discountedAmount = 0;
     let grandTotalAmount = 0;
     let totalProfit = 0;
+    let soldProducts = [];
 
     const promises = products.map(async (e) => {
       const { productId, quantity, sellingPrice } = e;
@@ -345,7 +446,9 @@ router.post("/", async (req, res) => {
         const { count, result } = await productRepository.getSingleProduct(
           productId
         );
-
+        e.mrp = result.mrp;
+        e.purchasePriceWithGst = result.rate + result.sgst + result.cgst;
+        e.productName = result.productName;
         if (count) {
           if (result.quantity < parseFloat(quantity)) {
             return { error: true, result };
@@ -364,14 +467,16 @@ router.post("/", async (req, res) => {
                   parseFloat(result.sgst) +
                   parseFloat(result.cgst))) *
                 parseFloat(quantity);
+            soldProducts = [...soldProducts, e];
             return { error: false, result };
           }
         }
       }
     });
+
     productArray = await Promise.all(promises);
 
-    let errorInProductArray = undefined;
+    let errorInProductArray = {};
 
     productArray.every(({ error, result }) => {
       if (error) {
@@ -381,7 +486,7 @@ router.post("/", async (req, res) => {
       } else return true;
     });
 
-    if (errorInProductArray) {
+    if (errorInProductArray.error) {
       return res
         .status(httpCodes.BAD_REQUEST)
         .send(
@@ -422,11 +527,105 @@ router.post("/", async (req, res) => {
     });
     totalAmount = parseFloat(grandTotalAmount) + parseFloat(discountedAmount);
     creditAmount = parseFloat(grandTotalAmount) - parseFloat(paidAmount);
+    if (creditAmount > 0) {
+      if (!customerMobileNo.length || !customerName.length) {
+        return res
+          .status(httpCodes.BAD_REQUEST)
+          .send(
+            new ErrorObject(
+              httpCodes.BAD_REQUEST,
+              "SA055",
+              "Please provide customer details as there is amount due - ",
+              "sale",
+              req.url,
+              req.method,
+              error
+            )
+          );
+      }
+    }
 
+    let customerObject = {};
+    if (customerMobileNo.length && customerName.length) {
+      customerObject = await customerRepository.getSingleCustomerByMobileNo(
+        customerMobileNo
+      );
+
+      if (!customerObject.count) {
+        const customer = new Customer(
+          customerName,
+          customerMobileNo.toString(),
+          customerAddress,
+          dayjs().format("YYYY-MM-DD").toString(),
+          0,
+          0
+        );
+
+        const { error } = validateReqBodyCustomer(customer);
+        if (error) {
+          return res
+            .status(httpCodes.BAD_REQUEST)
+            .send(
+              new ErrorObject(
+                httpCodes.BAD_REQUEST,
+                "SA065",
+                "Invalid customer data provided - " + error.message,
+                "sale",
+                req.url,
+                req.method,
+                error
+              )
+            );
+        }
+        customerObject = await customerRepository.createCustomer(customer);
+
+        if (!customerObject) {
+          return res
+            .status(httpCodes.INTERNAL_SERVER_ERROR)
+            .send(
+              new ErrorObject(
+                httpCodes.INTERNAL_SERVER_ERROR,
+                "SA066",
+                "Something went wrong",
+                "sale",
+                req.url,
+                req.method,
+                customerObject
+              )
+            );
+        }
+      } else {
+        customerObject = customerObject.result[0];
+
+        // update customer's credit
+        customerObject.totalCreditAmount += creditAmount;
+
+        const customerUpdated = await customerRepository.updateCustomer(
+          customerObject._id.toString(),
+          customerObject
+        );
+        if (!customerUpdated) {
+          return res
+            .status(httpCodes.INTERNAL_SERVER_ERROR)
+            .send(
+              new ErrorObject(
+                httpCodes.INTERNAL_SERVER_ERROR,
+                "SA099",
+                "Something went wrong.",
+                "sale",
+                req.url,
+                req.method,
+                null
+              )
+            );
+        }
+      }
+    }
     const sale = new Sale(
       billNumber,
-      customerId,
-      customerMobileNo,
+      customerObject._id?.toString() || dummyCustomerIdentifier,
+      customerObject.customerContactNo || dummyMobileNumber,
+      customerObject.customerName || dummyCustomerIdentifier,
       dateOfSale,
       products,
       totalAmount,
@@ -437,7 +636,7 @@ router.post("/", async (req, res) => {
       creditAmount,
       dueDate,
       grandTotalAmount,
-      totalProfit,
+      totalProfit.toString(),
       (__v = 0)
     );
 
@@ -479,31 +678,6 @@ router.post("/", async (req, res) => {
         );
     }
 
-    // update customer's credit
-    customerObject.totalCreditAmount = creditAmount;
-    customerObject.__v += 1;
-
-    const customerUpdated = await customerRepository.updateCustomer(
-      customerObject._id,
-      customerObject
-    );
-
-    if (!customerUpdated) {
-      return res
-        .status(httpCodes.INTERNAL_SERVER_ERROR)
-        .send(
-          new ErrorObject(
-            httpCodes.INTERNAL_SERVER_ERROR,
-            "SA099",
-            "Something went wrong.",
-            "sale",
-            req.url,
-            req.method,
-            null
-          )
-        );
-    }
-
     // Successful response
     return res
       .status(httpCodes.OK)
@@ -518,6 +692,7 @@ router.post("/", async (req, res) => {
         )
       );
   } catch (error) {
+    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -534,12 +709,144 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.delete("/delete/:id", async (req, res) => {
+router.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { paidAmount } = req.body;
+  try {
+    const saleDetails = await saleRepository.getSingleSale(id);
+
+    if (!saleDetails) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "SA085",
+            "Sale detail not found.",
+            "sale",
+            req.url,
+            req.method,
+            { id }
+          )
+        );
+    }
+    if (isNaN(parseFloat(paidAmount))) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "SA086",
+            "Invalid paid amount provided.",
+            "sale",
+            req.url,
+            req.method,
+            { id, paidAmount }
+          )
+        );
+    }
+
+    const customerObject = await customerRepository.getSingleCustomer(
+      saleDetails.customerId
+    );
+
+    if (customerObject.errorStatus) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "SA077",
+            "Something Went Wrong. Customer not found",
+            "sale",
+            req.url,
+            req.method,
+            { id, paidAmount, saleDetails, customerObject }
+          )
+        );
+    }
+
+    customerObject.result.totalCreditAmount -= parseFloat(paidAmount);
+    customerObject.result.__v += 1;
+
+    const updatedCustomer = await customerRepository.updateCustomer(
+      customerObject.result._id,
+      customerObject
+    );
+
+    if (!updatedCustomer) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "SA078",
+            "Something Went Wrong. Customer not updated",
+            "sale",
+            req.url,
+            req.method,
+            { id, paidAmount, customerObject, updatedCustomer }
+          )
+        );
+    }
+
+    saleDetails.cerditAmount -= parseFloat(paidAmount);
+    saleDetails.paidAmount += parseFloat(paidAmount);
+
+    saleDetails.__v += 1;
+
+    const saleUpdatedObject = await saleRepository.updateSale(id, saleDetails);
+    if (saleUpdatedObject.errorStatus) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "SA087",
+            "Something Went Wrong.",
+            "sale",
+            req.url,
+            req.method,
+            { id, paidAmount, saleDetails }
+          )
+        );
+    }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Sale detail updated successfully.",
+          "sale",
+          req.url,
+          { count: 1, result: saleUpdatedObject }
+        )
+      );
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "SA088",
+          "Something wrnt wrong.",
+          "sale",
+          req.url,
+          req.method,
+          error
+        )
+      );
+  }
+});
+
+router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const saleDetails = saleRepository.getSingleSale(id);
-
+    const saleDetails = await saleRepository.getSingleSale(id);
     if (!saleDetails) {
       return res
         .status(httpCodes.NOT_FOUND)
@@ -556,54 +863,72 @@ router.delete("/delete/:id", async (req, res) => {
         );
     }
 
-    const { products } = saleDetail;
+    let customerObject = {};
+    if (
+      saleDetails.customerId != dummyCustomerIdentifier &&
+      saleDetails.cerditAmount
+    ) {
+      customerObject = await customerRepository.getSingleCustomer(
+        saleDetails.customerId
+      );
+      customerObject.result.totalCreditAmount -= parseFloat(
+        saleDetails.cerditAmount
+      );
+      customerObject.result.__v += 1;
+      const customerResult = await customerRepository.updateCustomer(
+        customerObject.result._id,
+        customerObject.result
+      );
 
-    products.array.forEach(async (element) => {
-      const { _id, quantity } = element;
-      const { result } = await productRepository.getSingleProduct(_id);
-      if (!result) {
-        result._id = undefined;
-        result.__v = undefined;
-        const createdProduct = await productRepository.createProduct(result);
-        if (!createdProduct) {
-          return res
-            .status(httpCodes.INTERNAL_SERVER_ERROR)
-            .send(
-              new ErrorObject(
-                httpCodes.INTERNAL_SERVER_ERROR,
-                "SA015",
-                "Something wrnt wrong.",
-                "sale",
-                req.url,
-                req.method,
-                null
-              )
-            );
-        }
-      } else {
-        result.quantity += quantity;
-        result.__v += 1;
-        const updatedProduct = await productRepository.updateProduct(
-          result._id,
-          result
-        );
-        if (!updatedProduct) {
-          return res
-            .status(httpCodes.INTERNAL_SERVER_ERROR)
-            .send(
-              new ErrorObject(
-                httpCodes.INTERNAL_SERVER_ERROR,
-                "SA016",
-                "Something wrnt wrong.",
-                "sale",
-                req.url,
-                req.method,
-                null
-              )
-            );
-        }
+      if (!customerResult) {
+        return res
+          .status(httpCodes.NOT_FOUND)
+          .send(
+            new ErrorObject(
+              httpCodes.NOT_FOUND,
+              "SA084",
+              "Issue with customer.",
+              "sale",
+              req.url,
+              req.method,
+              customerObject
+            )
+          );
+      }
+    }
+
+    const { products } = saleDetails;
+
+    const promises = products.map(async (element) => {
+      const { productId, quantity } = element;
+      const { result, error } = await productRepository.getSingleProduct(
+        productId
+      );
+      result.quantity += parseInt(quantity);
+      result.__v += 1;
+      const updatedProduct = await productRepository.updateProduct(
+        result._id,
+        result
+      );
+
+      if (!updatedProduct) {
+        return res
+          .status(httpCodes.INTERNAL_SERVER_ERROR)
+          .send(
+            new ErrorObject(
+              httpCodes.INTERNAL_SERVER_ERROR,
+              "SA016",
+              "Something wrnt wrong.",
+              "sale",
+              req.url,
+              req.method,
+              null
+            )
+          );
       }
     });
+
+    const productArray = await Promise.all(promises);
 
     const saleDetail = await saleRepository.deleteSale(id);
     return res
@@ -619,6 +944,7 @@ router.delete("/delete/:id", async (req, res) => {
         )
       );
   } catch (error) {
+    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -629,7 +955,7 @@ router.delete("/delete/:id", async (req, res) => {
           "sale",
           req.url,
           req.method,
-          null
+          error
         )
       );
   }

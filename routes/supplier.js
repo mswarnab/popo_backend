@@ -466,7 +466,7 @@ router.put("/:id", async (req, res) => {
     if (existingSupplier.supplierContactNo != supplierContactNo) {
       const supplierOnMobileNo =
         await supplierRepository.getSingleSupplierByMobileNo(supplierContactNo);
-      if (supplierOnMobileNo) {
+      if (supplierOnMobileNo.result[1]) {
         return res
           .status(httpCodes.BAD_REQUEST)
           .send(

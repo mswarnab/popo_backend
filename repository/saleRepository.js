@@ -66,15 +66,15 @@ const getTotalSaleAmountInLastMonth = async (
 const createSale = async (saleObject) => {
   try {
     const sale = new Sale(saleObject);
-    await sale.save();
+    return await sale.save();
   } catch (error) {
     return { errorStatus: true, error };
   }
 };
 
-const updateSale = async (saleObject) => {
+const updateSale = async (id, saleObject) => {
   try {
-    return await Sale.findByIdAndUpdate(saleObject._id, saleObject);
+    return await Sale.findByIdAndUpdate(id, saleObject);
   } catch (error) {
     return { errorStatus: true, error };
   }
@@ -165,7 +165,35 @@ const getSaleBasedOnCustomerId = async (page, id) => {
       .skip(20 * parseFloat(page))
       .limit(20);
     return { result, count };
-  } catch (error) {}
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
+const getTotalProfitBasedOnDuration = async (startDate, endDate) => {
+  try {
+    // const result = await Sale.find({
+    //   dateOfSale: { $lte: startDate, $gt: endDate },
+    // }).select(["totalProfit", "dateOfSale"]);
+
+    const result2 = await Sale.aggregate([
+      {
+        $match: {
+          dateOfSale: { $lte: startDate, $gt: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: null, // Group all matching documents together
+          totalProfitSum: { $sum: "$totalProfit" },
+          totalSoldSum: { $sum: "$grandTotalAmount" },
+        },
+      },
+    ]);
+    return { count: result2.totalProfitSum, result: result2 };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
 };
 
 module.exports = {
@@ -178,4 +206,5 @@ module.exports = {
   getSaleBasedOnCustomerId,
   getTotalSaleAmountInLastWeek,
   getTotalSaleAmountInLastMonth,
+  getTotalProfitBasedOnDuration,
 };

@@ -2,12 +2,16 @@ const mongoose = require("mongoose");
 
 const saleSchema = new mongoose.Schema({
   billNumber: { type: String, required: true },
-  customerId: { type: String, required: true },
-  customerMobileNo: { type: String, required: true },
+  customerId: String,
+  customerMobileNo: String,
+  customerName: String,
   dateOfSale: { type: String, required: true },
   products: [
     {
       productId: String,
+      productName: String,
+      purchasePriceWithGst: Number,
+      mrp: Number,
       quantity: Number,
       sellingPrice: Number,
       discountedAmount: Number,

@@ -514,7 +514,7 @@ router.put("/:id", async (req, res) => {
       const customerBasedOnContractNo =
         await customerRepository.getSingleCustomerByMobileNo(customerContactNo);
 
-      if (customerBasedOnContractNo) {
+      if (customerBasedOnContractNo.result[1]) {
         return res
           .status(httpCodes.BAD_REQUEST)
           .send(
@@ -522,7 +522,7 @@ router.put("/:id", async (req, res) => {
               httpCodes.BAD_REQUEST,
               "CU097",
               "Another Customer with this mobile number already exists - " +
-                supplierContactNo,
+                customerContactNo,
               "customer",
               req.url,
               req.method,
