@@ -618,7 +618,7 @@ router.delete("/:id", async (req, res) => {
         new ErrorObject(
           httpCodes.INTERNAL_SERVER_ERROR,
           "PO013",
-          "Something Went wrong. " + errorPurchaseOrder.message,
+          "Something Went wrong. " + error.message,
           "purchaseOrder",
           req.url,
           req.method,
