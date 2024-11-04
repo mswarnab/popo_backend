@@ -469,31 +469,50 @@ router.post("/", async (req, res) => {
 //Update Purchase Order
 router.put("/:id", async (req, res) => {
   try {
-    const purchaseOrder = new PurchaseOrder(req.body);
-    const { error, value, warning } =
-      validateReqBodyPurchaseOrder(purchaseOrder);
+    const { id } = req.params;
 
-    // Validate request body
-    if (error) {
+    const { paidAmount } = req.body;
+
+    if (isNaN(paidAmount)) {
       return res
         .status(httpCodes.BAD_REQUEST)
         .send(
           new ErrorObject(
             httpCodes.BAD_REQUEST,
-            "PO011",
-            "Invalid Purchase Order details provided - " + error.message,
+            "PO031",
+            "Invalid paid amount provided",
             "purchaseOrder",
             req.url,
             req.method,
-            null
+            paidAmount
           )
         );
     }
 
+    const purchaseOrder = await purchaseOrderRepository.getSinglePurchaseOrder(
+      id
+    );
+    if (purchaseOrder.errorStatus) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "PO032",
+            "Invalid Purchase Order details provided - ",
+            "purchaseOrder",
+            req.url,
+            req.method,
+            purchaseOrder.error
+          )
+        );
+    }
+
+    purchaseOrder.paidAmount += parseFloat(paidAmount);
     purchaseOrder.__v += 1;
 
     //otherwise purchase order Repository is invoked.
-    const purchaseOrderObject =
+    const purchaseOrderObjectAfterUpdate =
       await purchaseOrderRepository.updatePurchaseOrder(id, purchaseOrder);
 
     //Successful response
@@ -506,17 +525,18 @@ router.put("/:id", async (req, res) => {
           "Purchase order updated successfully.",
           "purchaseOrder",
           req.url,
-          { count: 1, purchaseOrderObject }
+          { count: 1, purchaseOrderObjectAfterUpdate }
         )
       );
   } catch (error) {
+    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
         new ErrorObject(
           httpCodes.INTERNAL_SERVER_ERROR,
           "PO012",
-          "Something Went wrong. " + errorPurchaseOrder.message,
+          "Something Went wrong. " + error.message,
           "purchaseOrder",
           req.url,
           req.method,
