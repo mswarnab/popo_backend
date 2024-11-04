@@ -119,7 +119,7 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await purchaseOrderRepository.getSinglePurchaseOrder(id);
-    if (result.error) {
+    if (!result) {
       return res
         .status(httpCodes.NOT_FOUND)
         .send(
@@ -134,18 +134,27 @@ router.get("/:id", async (req, res) => {
           )
         );
     }
-    return res
-      .status(httpCodes.OK)
-      .send(
-        new ResponseObject(
-          httpCodes.OK,
-          req.method,
-          "Purchase order fetched successfully.",
-          "purchaseOrder",
-          req.url,
-          { count: 1, result }
-        )
-      );
+
+    const productArray = await productRepository.getAllProductsOnPurchaseOrder(
+      id
+    );
+
+    return res.status(httpCodes.OK).send(
+      new ResponseObject(
+        httpCodes.OK,
+        req.method,
+        "Purchase order fetched successfully.",
+        "purchaseOrder",
+        req.url,
+        {
+          count: 1,
+          result: {
+            purchaseOrderDetails: result,
+            products: productArray.result,
+          },
+        }
+      )
+    );
   } catch (error) {
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
@@ -492,7 +501,7 @@ router.put("/:id", async (req, res) => {
     const purchaseOrder = await purchaseOrderRepository.getSinglePurchaseOrder(
       id
     );
-    if (purchaseOrder.errorStatus) {
+    if (!purchaseOrder) {
       return res
         .status(httpCodes.NOT_FOUND)
         .send(
@@ -512,23 +521,52 @@ router.put("/:id", async (req, res) => {
     purchaseOrder.cerditAmount -= parseFloat(paidAmount);
     purchaseOrder.__v += 1;
 
+    const existingSupplierDetails = await supplierRepository.getSingleSupplier(
+      purchaseOrder.supplierId
+    );
+
+    if (!existingSupplierDetails.result) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "PO037",
+            "Invalid Supplier not found - ",
+            "purchaseOrder",
+            req.url,
+            req.method,
+            purchaseOrder.supplierId
+          )
+        );
+    }
+
+    existingSupplierDetails.result.totalCreditAmount -= parseFloat(paidAmount);
+
     //otherwise purchase order Repository is invoked.
     const purchaseOrderObjectAfterUpdate =
       await purchaseOrderRepository.updatePurchaseOrder(id, purchaseOrder);
 
+    const updatedSupplier = await supplierRepository.updateSupplier(
+      existingSupplierDetails.result._id,
+      existingSupplierDetails.result
+    );
+
     //Successful response
-    return res
-      .status(httpCodes.OK)
-      .send(
-        new ResponseObject(
-          httpCodes.OK,
-          req.method,
-          "Purchase order updated successfully.",
-          "purchaseOrder",
-          req.url,
-          { count: 1, purchaseOrderObjectAfterUpdate }
-        )
-      );
+    return res.status(httpCodes.OK).send(
+      new ResponseObject(
+        httpCodes.OK,
+        req.method,
+        "Purchase order updated successfully.",
+        "purchaseOrder",
+        req.url,
+        {
+          count: 1,
+          purchaseOrderObjectAfterUpdate,
+          suppllierDetails: updatedSupplier,
+        }
+      )
+    );
   } catch (error) {
     console.log(error);
     return res
@@ -553,6 +591,23 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    const existingPurchaseOrder =
+      await purchaseOrderRepository.getSinglePurchaseOrder(id);
+    if (!existingPurchaseOrder) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "PO043",
+            "Purchase order not found with this ID - " + id,
+            "purchaseOrder",
+            req.url,
+            req.method,
+            id
+          )
+        );
+    }
     const productArray = await productRepository.getAllProductsOnPurchaseOrder(
       id
     );
@@ -573,7 +628,7 @@ router.delete("/:id", async (req, res) => {
     }
 
     const errorInProductArray = { error: false, product: {} };
-    productArray.forEach(({ result }) => {
+    productArray.result.forEach((result) => {
       if (result.purchaseQuantity != result.quantity) {
         errorInProductArray.error = true;
         errorInProductArray.product = e;
@@ -597,8 +652,39 @@ router.delete("/:id", async (req, res) => {
         );
     }
 
+    const supplierDetails = await supplierRepository.getSingleSupplier(
+      existingPurchaseOrder.supplierId
+    );
+
+    if (supplierDetails.errorStatus) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "PO033",
+            "Supplier not found with this id - " +
+              existingPurchaseOrder.supplierId,
+            "purchaseOrder",
+            req.url,
+            req.method,
+            id
+          )
+        );
+    }
+
+    supplierDetails.result.totalCreditAmount -=
+      existingPurchaseOrder.cerditAmount;
+    supplierDetails.result.__v += 1;
+
+    console.log(supplierDetails.result);
+    const updatedSupplier = await supplierRepository.updateSupplier(
+      supplierDetails.result._id,
+      supplierDetails.result
+    );
     const stock = await productRepository.deleteProductByPurchaseOrder(id);
     const purchaseOrder = await purchaseOrderRepository.deletePurchaseOrder(id);
+
     return res
       .status(httpCodes.OK)
       .send(
@@ -608,10 +694,11 @@ router.delete("/:id", async (req, res) => {
           "Purchase order and related Stock deleted successfully.",
           "purchaseOrder",
           req.url,
-          { purchaseOrder, stock }
+          { purchaseOrder, stock, updatedSupplier }
         )
       );
   } catch (error) {
+    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(

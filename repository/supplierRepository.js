@@ -40,7 +40,9 @@ const getSingleSupplierByMobileNo = async (mobileNo) => {
 };
 const updateSupplier = async (id, supplierObject) => {
   try {
-    return await Supplier.findByIdAndUpdate(id, supplierObject);
+    return await Supplier.findByIdAndUpdate(id, supplierObject, {
+      returnDocument: "after",
+    });
   } catch (error) {
     return { errorStatus: true, error };
   }
