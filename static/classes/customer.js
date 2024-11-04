@@ -8,7 +8,7 @@ class Customer {
     __v
   ) {
     this.customerName = customerName.trim();
-    this.customerContactNo = parseFloat(mobileNo.trim());
+    this.customerContactNo = mobileNo.toString().trim();
     this.customerAddress = address.trim();
     (this.lastPurchaseDate = lastPurchaseDate.trim()),
       (this.totalCreditAmount = totalCreditAmount.toString().trim());

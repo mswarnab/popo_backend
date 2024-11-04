@@ -379,6 +379,8 @@ router.post("/", async (req, res) => {
       0
     );
 
+    console.log(customerContactNo);
+
     // Validate request body
     const { error } = validateReqBody(customer);
 
