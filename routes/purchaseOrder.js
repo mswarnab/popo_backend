@@ -509,6 +509,7 @@ router.put("/:id", async (req, res) => {
     }
 
     purchaseOrder.paidAmount += parseFloat(paidAmount);
+    purchaseOrder.cerditAmount -= parseFloat(paidAmount);
     purchaseOrder.__v += 1;
 
     //otherwise purchase order Repository is invoked.
