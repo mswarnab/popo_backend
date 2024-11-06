@@ -25,15 +25,21 @@ class Sale {
     this.customerName = customerName.toString().trim();
     this.dateOfSale = dateOfSale.toString().trim();
     this.products = products;
-    this.totalAmount = totalAmount.toString().trim();
-    this.cgst = cgst.toString().trim();
-    this.sgst = sgst.toString().trim();
-    this.discountedAmount = discountedAmount.toString().trim();
-    this.paidAmount = paidAmount.toString().trim();
-    this.cerditAmount = cerditAmount.toString().trim();
+    this.totalAmount = parseFloat(totalAmount).toFixed(2).toString().trim();
+    this.cgst = parseFloat(cgst).toFixed(2).toString().trim();
+    this.sgst = parseFloat(sgst).toFixed(2).toString().trim();
+    this.discountedAmount = parseFloat(discountedAmount)
+      .toFixed(2)
+      .toString()
+      .trim();
+    this.paidAmount = parseFloat(paidAmount).toFixed(2).toString().trim();
+    this.cerditAmount = parseFloat(cerditAmount).toFixed(2).toString().trim();
     this.dueDate = dueDate.toString().trim();
-    this.grandTotalAmount = grandTotalAmount.toString().trim();
-    this.totalProfit = totalProfit.trim();
+    this.grandTotalAmount = parseFloat(grandTotalAmount)
+      .toFixed(2)
+      .toString()
+      .trim();
+    this.totalProfit = parseFloat(totalProfit).toFixed(2).toString().trim();
     this.__v = __v.toString().trim();
   }
 }

@@ -228,15 +228,15 @@ router.get("/", async (req, res) => {
     let sortObject = {};
     let filterObject = {};
     if (sortByDateOfSale) {
-      sortObject.dateOfSale = parseFloat(sortByDateOfSale);
+      sortObject.dateOfSale = parseInt(sortByDateOfSale);
     }
 
     if (sortByGrandTotalAmount) {
-      sortObject.grandTotalAmount = parseFloat(sortByGrandTotalAmount);
+      sortObject.grandTotalAmount = parseInt(sortByGrandTotalAmount);
     }
 
     if (sortByCreditAmount) {
-      sortObject.creditAmount = parseFloat(sortByCreditAmount);
+      sortObject.creditAmount = parseInt(sortByCreditAmount);
     }
 
     if (filterByCustomerMobileNumber) {
@@ -446,18 +446,20 @@ router.post("/", async (req, res) => {
         const { count, result } = await productRepository.getSingleProduct(
           productId
         );
-        e.mrp = result.mrp;
-        e.purchasePriceWithGst = result.rate + result.sgst + result.cgst;
+        e.mrp = parseFloat(result.mrp).toFixed(2);
+        e.purchasePriceWithGst = parseFloat(
+          result.rate + result.sgst + result.cgst
+        ).toFixed(2);
         e.productName = result.productName;
         if (count) {
-          if (result.quantity < parseFloat(quantity)) {
+          if (result.quantity < parseInt(quantity)) {
             return { error: true, result };
           } else {
-            result.quantity -= parseFloat(quantity);
+            result.quantity -= parseInt(quantity);
             discountedAmount +=
-              (result.mrp - parseFloat(sellingPrice)) * parseFloat(quantity);
+              (result.mrp - parseFloat(sellingPrice)) * parseInt(quantity);
             grandTotalAmount +=
-              parseFloat(sellingPrice) * parseFloat(quantity) +
+              parseFloat(sellingPrice) * parseInt(quantity) +
               parseFloat(cgst) +
               parseFloat(sgst);
             totalProfit =
@@ -466,7 +468,8 @@ router.post("/", async (req, res) => {
                 (parseFloat(result.rate) +
                   parseFloat(result.sgst) +
                   parseFloat(result.cgst))) *
-                parseFloat(quantity);
+                parseInt(quantity);
+            e.discountedAmount = discountedAmount;
             soldProducts = [...soldProducts, e];
             return { error: false, result };
           }
@@ -628,15 +631,15 @@ router.post("/", async (req, res) => {
       customerObject.customerName || dummyCustomerIdentifier,
       dateOfSale,
       products,
-      totalAmount,
-      cgst,
-      sgst,
-      discountedAmount,
-      paidAmount,
-      creditAmount,
+      Math.ceil(totalAmount).toFixed(2),
+      Math.ceil(cgst).toFixed(2),
+      Math.ceil(sgst).toFixed(2),
+      Math.ceil(discountedAmount).toFixed(2),
+      Math.ceil(paidAmount).toFixed(2),
+      Math.ceil(creditAmount).toFixed(2),
       dueDate,
-      grandTotalAmount,
-      totalProfit.toString(),
+      Math.ceil(grandTotalAmount).toFixed(2),
+      Math.ceil(totalProfit).toFixed(2),
       (__v = 0)
     );
 
@@ -766,7 +769,8 @@ router.put("/:id", async (req, res) => {
         );
     }
 
-    customerObject.result.totalCreditAmount -= parseFloat(paidAmount);
+    customerObject.result.totalCreditAmount -=
+      parseFloat(paidAmount).toFixed(2);
     customerObject.result.__v += 1;
 
     const updatedCustomer = await customerRepository.updateCustomer(
@@ -790,8 +794,8 @@ router.put("/:id", async (req, res) => {
         );
     }
 
-    saleDetails.cerditAmount -= parseFloat(paidAmount);
-    saleDetails.paidAmount += parseFloat(paidAmount);
+    saleDetails.cerditAmount -= parseFloat(paidAmount).toFixed(2);
+    saleDetails.paidAmount += parseFloat(paidAmount).toFixed(2);
 
     saleDetails.__v += 1;
 
@@ -873,7 +877,7 @@ router.delete("/:id", async (req, res) => {
       );
       customerObject.result.totalCreditAmount -= parseFloat(
         saleDetails.cerditAmount
-      );
+      ).toFixed(2);
       customerObject.result.__v += 1;
       const customerResult = await customerRepository.updateCustomer(
         customerObject.result._id,

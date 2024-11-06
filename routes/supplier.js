@@ -484,7 +484,7 @@ router.put("/:id", async (req, res) => {
       }
     }
 
-    supplier.__v = parseFloat(supplier.__v) + 1;
+    supplier.__v = parseInt(supplier.__v) + 1;
 
     //otherwise purchase order Repository is invoked.
     const supplierObject = await supplierRepository.updateSupplier(

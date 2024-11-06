@@ -275,8 +275,8 @@ router.post("/", async (req, res) => {
         dateOfPruchase,
         mfgDate,
         expDate,
-        quantity,
-        quantity,
+        parseInt(quantity),
+        parseInt(quantity),
         rate,
         sgst,
         cgst,
@@ -342,17 +342,17 @@ router.post("/", async (req, res) => {
       supplierId,
       supplierDetails.result.supplierName,
       dateOfPruchase,
-      totalAmount,
-      discountPO.toString(),
+      totalAmount.toFixed(2),
+      discountPO.toFixed(2),
       sgstPO.toString(),
       cgstPO.toString(),
       paidAmount,
       modeOfPayment,
-      creditAmount,
+      creditAmount.toFixed(2),
       dueDate,
       addLessAmount,
       crDrNote,
-      grandTotalAmount,
+      grandTotalAmount.toFixed(2),
       0
     );
 
@@ -438,7 +438,7 @@ router.post("/", async (req, res) => {
     const supplierObject = supplierDetails.result;
 
     if (creditAmount) {
-      supplierObject.totalCreditAmount += creditAmount;
+      supplierObject.totalCreditAmount += creditAmount.toFixed(2);
       await supplierRepository.updateSupplier(
         supplierObject._id,
         supplierObject
@@ -673,7 +673,7 @@ router.delete("/:id", async (req, res) => {
         );
     }
 
-    supplierDetails.result.totalCreditAmount -=
+    supplierDetails.result.totalCreditAmount.toFixed(2) -=
       existingPurchaseOrder.cerditAmount;
     supplierDetails.result.__v += 1;
 
