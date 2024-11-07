@@ -129,7 +129,8 @@ router.get("/totalsale", async (req, res) => {
 
 router.get("/profit", async (req, res) => {
   try {
-    const { duration } = req.query;
+    const { duration = "WEEKLY" } = req.query;
+
     const currDate = dayjs().format("YYYYMMDD");
     let dateArray = [currDate];
 
@@ -560,7 +561,7 @@ router.post("/", async (req, res) => {
           customerMobileNo.toString(),
           customerAddress,
           dayjs().format("YYYY-MM-DD").toString(),
-          0,
+          creditAmount,
           0
         );
 
@@ -794,8 +795,12 @@ router.put("/:id", async (req, res) => {
         );
     }
 
-    saleDetails.cerditAmount -= parseFloat(paidAmount).toFixed(2);
-    saleDetails.paidAmount += parseFloat(paidAmount).toFixed(2);
+    saleDetails.cerditAmount =
+      parseFloat(saleDetails.cerditAmount).toFixed(2) -
+      parseFloat(paidAmount).toFixed(2);
+    saleDetails.paidAmount +=
+      parseFloat(saleDetails.paidAmount).toFixed(2) +
+      parseFloat(paidAmount).toFixed(2);
 
     saleDetails.__v += 1;
 
