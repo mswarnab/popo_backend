@@ -550,12 +550,27 @@ router.post("/", async (req, res) => {
     }
 
     let customerObject = {};
-    if (customerMobileNo.length && customerName.length) {
+    if (customerMobileNo.length) {
       customerObject = await customerRepository.getSingleCustomerByMobileNo(
         customerMobileNo
       );
 
       if (!customerObject.count) {
+        if (!customerName) {
+          return res
+            .status(httpCodes.BAD_REQUEST)
+            .send(
+              new ErrorObject(
+                httpCodes.BAD_REQUEST,
+                "SA038",
+                "Please provide customer name.",
+                "sale",
+                req.url,
+                req.method,
+                customerMobileNo
+              )
+            );
+        }
         const customer = new Customer(
           customerName,
           customerMobileNo.toString(),
