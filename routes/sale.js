@@ -417,18 +417,27 @@ router.post("/", async (req, res) => {
       dueDate,
     } = req.body;
 
-    let customerObject = {};
+    let customerObject = undefined;
     let customerError = { error: false, message: "" };
+
+    if (!customerId && !customerName && !customerMobileNo) {
+      customerError = {
+        error: true,
+        message: "C1",
+      };
+    }
     if (customerId) {
-      customerObject = await customerRepository.getSingleCustomer(customerId);
+      customerObject = await customerRepository.getSingleCustomer(customerId)
+        .result;
       //fetch the customer Details
     }
 
     if (!customerObject) {
       if (customerMobileNo) {
-        customerObject = await customerRepository.getSingleCustomerByMobileNo(
+        const { result } = await customerRepository.getSingleCustomerByMobileNo(
           customerMobileNo
         );
+        customerObject = result[0];
       } else {
         customerError = {
           error: true,
@@ -436,8 +445,10 @@ router.post("/", async (req, res) => {
         };
       }
     }
+    console.log(customerObject);
 
     if (!customerObject && !customerError.error) {
+      console.log("a");
       if (customerName) {
         customerObject = new Customer(
           customerName,
@@ -455,6 +466,7 @@ router.post("/", async (req, res) => {
       }
     }
 
+    console.log(customerObject);
     if (!products) {
       return res
         .status(httpCodes.BAD_REQUEST)
@@ -571,20 +583,20 @@ router.post("/", async (req, res) => {
       customerObject.customerName || dummyCustomerIdentifier,
       dateOfSale,
       products,
-      Math.ceil(totalAmount).toFixed(2),
-      Math.ceil(cgst).toFixed(2),
-      Math.ceil(sgst).toFixed(2),
-      Math.ceil(discountedAmount).toFixed(2),
-      Math.ceil(paidAmount).toFixed(2),
-      Math.ceil(creditAmount).toFixed(2),
+      totalAmount.toFixed(2),
+      parseFloat(cgst).toFixed(2),
+      parseFloat(sgst).toFixed(2),
+      discountedAmount.toFixed(2),
+      parseFloat(paidAmount).toFixed(2),
+      creditAmount.toFixed(2),
       dueDate,
-      Math.ceil(grandTotalAmount).toFixed(2),
-      Math.ceil(totalProfit).toFixed(2),
+      grandTotalAmount.toFixed(2),
+      totalProfit.toFixed(2),
       (__v = 0)
     );
 
     // Validate request body
-    const { error, value, warning } = validateReqBody(sale);
+    const { error } = validateReqBody(sale);
 
     if (error) {
       return res
@@ -602,10 +614,10 @@ router.post("/", async (req, res) => {
         );
     }
 
-    if (!customerError.error) {
-      customerObject.totalCreditAmount =
-        parseFloat(customerObject.totalCreditAmount).toFixed(2) +
-        parseFloat(creditAmount).toFixed(2);
+    if (customerObject) {
+      customerObject.totalCreditAmount = (
+        parseFloat(customerObject.totalCreditAmount) + parseFloat(creditAmount)
+      ).toFixed(2);
 
       if (customerObject._id) {
         await customerRepository.updateCustomer(
@@ -617,20 +629,6 @@ router.post("/", async (req, res) => {
           customerObject
         );
       }
-    } else {
-      return res
-        .status(httpCodes.BAD_REQUEST)
-        .send(
-          new ErrorObject(
-            httpCodes.BAD_REQUEST,
-            "SA038",
-            "Please provide valid customer data.",
-            "sale",
-            req.url,
-            req.method,
-            customerObject
-          )
-        );
     }
 
     productArray.forEach(async ({ result }, i) => {
@@ -656,6 +654,7 @@ router.post("/", async (req, res) => {
       }
     });
 
+    sale.customerId = customerObject._id;
     //otherwise create product Repository is invoked.
     const saleDetailObject = await saleRepository.createSale(sale);
 
@@ -709,6 +708,7 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { paidAmount } = req.body;
+
   try {
     const saleDetails = await saleRepository.getSingleSale(id);
 
@@ -727,7 +727,7 @@ router.put("/:id", async (req, res) => {
           )
         );
     }
-    if (isNaN(parseFloat(paidAmount))) {
+    if (isNaN(parseFloat(paidAmount)) || parseFloat(paidAmount) < 0) {
       return res
         .status(httpCodes.NOT_FOUND)
         .send(
@@ -767,6 +767,49 @@ router.put("/:id", async (req, res) => {
       parseFloat(paidAmount).toFixed(2);
     customerObject.result.__v += 1;
 
+    saleDetails.cerditAmount = (
+      parseFloat(saleDetails.cerditAmount) - parseFloat(paidAmount)
+    ).toFixed(2);
+    saleDetails.paidAmount = (
+      parseFloat(saleDetails.paidAmount) +
+      parseFloat(saleDetails.paidAmount) +
+      parseFloat(paidAmount)
+    ).toFixed(2);
+
+    saleDetails.__v += 1;
+
+    if (saleDetails.cerditAmount < 0) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "SA028",
+            "Paid amount is greater than total due amount",
+            "sale",
+            req.url,
+            req.method,
+            { id, paidAmount, amountDue: saleDetails.cerditAmount }
+          )
+        );
+    }
+
+    const saleUpdatedObject = await saleRepository.updateSale(id, saleDetails);
+    if (saleUpdatedObject.errorStatus) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "SA087",
+            "Something Went Wrong.",
+            "sale",
+            req.url,
+            req.method,
+            { id, paidAmount, saleDetails }
+          )
+        );
+    }
     const updatedCustomer = await customerRepository.updateCustomer(
       customerObject.result._id,
       customerObject
@@ -787,33 +830,6 @@ router.put("/:id", async (req, res) => {
           )
         );
     }
-
-    saleDetails.cerditAmount =
-      parseFloat(saleDetails.cerditAmount).toFixed(2) -
-      parseFloat(paidAmount).toFixed(2);
-    saleDetails.paidAmount +=
-      parseFloat(saleDetails.paidAmount).toFixed(2) +
-      parseFloat(paidAmount).toFixed(2);
-
-    saleDetails.__v += 1;
-
-    const saleUpdatedObject = await saleRepository.updateSale(id, saleDetails);
-    if (saleUpdatedObject.errorStatus) {
-      return res
-        .status(httpCodes.NOT_FOUND)
-        .send(
-          new ErrorObject(
-            httpCodes.NOT_FOUND,
-            "SA087",
-            "Something Went Wrong.",
-            "sale",
-            req.url,
-            req.method,
-            { id, paidAmount, saleDetails }
-          )
-        );
-    }
-
     return res
       .status(httpCodes.OK)
       .send(
@@ -873,8 +889,9 @@ router.delete("/:id", async (req, res) => {
       customerObject = await customerRepository.getSingleCustomer(
         saleDetails.customerId
       );
-      customerObject.result.totalCreditAmount -= parseFloat(
-        saleDetails.cerditAmount
+      customerObject.result.totalCreditAmount = (
+        parseFloat(customerObject.result.totalCreditAmount) -
+        parseFloat(saleDetails.cerditAmount)
       ).toFixed(2);
       customerObject.result.__v += 1;
       const customerResult = await customerRepository.updateCustomer(

@@ -49,7 +49,7 @@ const getSingleCustomer = async (id) => {
 const getSingleCustomerByMobileNo = async (mobileNo) => {
   try {
     const result = await Customer.find({
-      customerContactNo: parseInt(mobileNo),
+      customerContactNo: mobileNo,
     });
     return { count: result.length, result };
   } catch (error) {

@@ -11,7 +11,7 @@ class Customer {
     this.customerContactNo = mobileNo.toString().trim();
     this.customerAddress = address.trim();
     this.lastPurchaseDate = lastPurchaseDate.trim();
-    this.totalCreditAmount = totalCreditAmount.toString().trim();
+    this.totalCreditAmount = parseFloat(totalCreditAmount).toFixed(2);
     this.__v = __v;
   }
 }
