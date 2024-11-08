@@ -109,9 +109,19 @@ router.get("/mobile/:mobileNo", async (req, res) => {
 router.get("/search", async (req, res) => {
   try {
     const { pattern } = req.query;
-    const { count, error, result } = await customerRepository.getSearchResult(
-      pattern
-    );
+
+    let customerResult;
+    if (isNaN(pattern)) {
+      console.log("non", pattern);
+      customerResult = await customerRepository.getSearchResult(pattern);
+    } else {
+      console.log("yes", pattern);
+      customerResult = await customerRepository.getSearchResultByMobile(
+        pattern
+      );
+    }
+
+    const { count, result } = customerResult;
 
     if (!count) {
       return res

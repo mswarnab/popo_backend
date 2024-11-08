@@ -417,6 +417,44 @@ router.post("/", async (req, res) => {
       dueDate,
     } = req.body;
 
+    let customerObject = {};
+    let customerError = { error: false, message: "" };
+    if (customerId) {
+      customerObject = await customerRepository.getSingleCustomer(customerId);
+      //fetch the customer Details
+    }
+
+    if (!customerObject) {
+      if (customerMobileNo) {
+        customerObject = await customerRepository.getSingleCustomerByMobileNo(
+          customerMobileNo
+        );
+      } else {
+        customerError = {
+          error: true,
+          message: "Customer mobile number not provided",
+        };
+      }
+    }
+
+    if (!customerObject && !customerError.error) {
+      if (customerName) {
+        customerObject = new Customer(
+          customerName,
+          customerMobileNo,
+          customerAddress,
+          dayjs().format("YYYY-MM-DD").toString(),
+          0,
+          0
+        );
+      } else {
+        customerError = {
+          error: true,
+          message: "Customer detais not provided",
+        };
+      }
+    }
+
     if (!products) {
       return res
         .status(httpCodes.BAD_REQUEST)
@@ -507,32 +545,10 @@ router.post("/", async (req, res) => {
         );
     }
 
-    productArray.forEach(async ({ result }, i) => {
-      result.__v += 1;
-      const updatedProduct = await productRepository.updateProduct(
-        result._id,
-        result
-      );
-      if (!updatedProduct) {
-        return res
-          .status(httpCodes.INTERNAL_SERVER_ERROR)
-          .send(
-            new ErrorObject(
-              httpCodes.INTERNAL_SERVER_ERROR,
-              "SA009",
-              "Something went wrong.",
-              "sale",
-              req.url,
-              req.method,
-              null
-            )
-          );
-      }
-    });
     totalAmount = parseFloat(grandTotalAmount) + parseFloat(discountedAmount);
     creditAmount = parseFloat(grandTotalAmount) - parseFloat(paidAmount);
     if (creditAmount > 0) {
-      if (!customerMobileNo.length || !customerName.length) {
+      if (customerError.error) {
         return res
           .status(httpCodes.BAD_REQUEST)
           .send(
@@ -542,104 +558,12 @@ router.post("/", async (req, res) => {
               "Please provide customer details as there is amount due - ",
               "sale",
               req.url,
-              req.method,
-              error
+              req.method
             )
           );
       }
     }
 
-    let customerObject = {};
-    if (customerMobileNo.length) {
-      customerObject = await customerRepository.getSingleCustomerByMobileNo(
-        customerMobileNo
-      );
-
-      if (!customerObject.count) {
-        if (!customerName) {
-          return res
-            .status(httpCodes.BAD_REQUEST)
-            .send(
-              new ErrorObject(
-                httpCodes.BAD_REQUEST,
-                "SA038",
-                "Please provide customer name.",
-                "sale",
-                req.url,
-                req.method,
-                customerMobileNo
-              )
-            );
-        }
-        const customer = new Customer(
-          customerName,
-          customerMobileNo.toString(),
-          customerAddress,
-          dayjs().format("YYYY-MM-DD").toString(),
-          creditAmount,
-          0
-        );
-
-        const { error } = validateReqBodyCustomer(customer);
-        if (error) {
-          return res
-            .status(httpCodes.BAD_REQUEST)
-            .send(
-              new ErrorObject(
-                httpCodes.BAD_REQUEST,
-                "SA065",
-                "Invalid customer data provided - " + error.message,
-                "sale",
-                req.url,
-                req.method,
-                error
-              )
-            );
-        }
-        customerObject = await customerRepository.createCustomer(customer);
-
-        if (!customerObject) {
-          return res
-            .status(httpCodes.INTERNAL_SERVER_ERROR)
-            .send(
-              new ErrorObject(
-                httpCodes.INTERNAL_SERVER_ERROR,
-                "SA066",
-                "Something went wrong",
-                "sale",
-                req.url,
-                req.method,
-                customerObject
-              )
-            );
-        }
-      } else {
-        customerObject = customerObject.result[0];
-
-        // update customer's credit
-        customerObject.totalCreditAmount += creditAmount;
-
-        const customerUpdated = await customerRepository.updateCustomer(
-          customerObject._id.toString(),
-          customerObject
-        );
-        if (!customerUpdated) {
-          return res
-            .status(httpCodes.INTERNAL_SERVER_ERROR)
-            .send(
-              new ErrorObject(
-                httpCodes.INTERNAL_SERVER_ERROR,
-                "SA099",
-                "Something went wrong.",
-                "sale",
-                req.url,
-                req.method,
-                null
-              )
-            );
-        }
-      }
-    }
     const sale = new Sale(
       billNumber,
       customerObject._id?.toString() || dummyCustomerIdentifier,
@@ -677,6 +601,60 @@ router.post("/", async (req, res) => {
           )
         );
     }
+
+    if (!customerError.error) {
+      customerObject.totalCreditAmount =
+        parseFloat(customerObject.totalCreditAmount).toFixed(2) +
+        parseFloat(creditAmount).toFixed(2);
+
+      if (customerObject._id) {
+        await customerRepository.updateCustomer(
+          customerObject._id,
+          customerObject
+        );
+      } else {
+        customerObject = await customerRepository.createCustomer(
+          customerObject
+        );
+      }
+    } else {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "SA038",
+            "Please provide valid customer data.",
+            "sale",
+            req.url,
+            req.method,
+            customerObject
+          )
+        );
+    }
+
+    productArray.forEach(async ({ result }, i) => {
+      result.__v += 1;
+      const updatedProduct = await productRepository.updateProduct(
+        result._id,
+        result
+      );
+      if (!updatedProduct) {
+        return res
+          .status(httpCodes.INTERNAL_SERVER_ERROR)
+          .send(
+            new ErrorObject(
+              httpCodes.INTERNAL_SERVER_ERROR,
+              "SA009",
+              "Something went wrong.",
+              "sale",
+              req.url,
+              req.method,
+              null
+            )
+          );
+      }
+    });
 
     //otherwise create product Repository is invoked.
     const saleDetailObject = await saleRepository.createSale(sale);

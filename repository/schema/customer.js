@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const customerSchema = new mongoose.Schema({
   customerName: String,
-  customerContactNo: Number,
+  customerContactNo: String,
   customerAddress: String,
   lastPurchaseDate: String,
   totalCreditAmount: Number,

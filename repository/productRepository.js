@@ -42,6 +42,7 @@ const getAllProducts = async (sortObject, filterObject, page) => {
     let count;
     let result;
 
+    filterObject = { ...filterObject, quantity: { $gt: 0 } };
     count = await Product.find(filterObject).countDocuments();
 
     result = await Product.find(filterObject)

@@ -90,9 +90,26 @@ const getSearchResult = async (pattern) => {
 
     const result = await Customer.find({
       customerName: { $regex: pattern, $options: "i" },
+    }).select(["customerName", "customerContactNo"]);
+
+    return { count, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
+const getSearchResultByMobile = async (pattern) => {
+  try {
+    const count = await Customer.find({
+      customerContactNo: { $regex: pattern, $options: "i" },
     })
       .select(["customerName", "customerContactNo"])
-      .limit(10);
+
+      .countDocuments();
+
+    const result = await Customer.find({
+      customerContactNo: { $regex: pattern, $options: "i" },
+    }).select(["customerName", "customerContactNo"]);
 
     return { count, result };
   } catch (error) {
@@ -107,10 +124,7 @@ const getCustomersOnRegex = async (regex) => {
       .regex(regex)
       .countDocuments();
 
-    const result = await Customer.find()
-      .where("customerName")
-      .regex(regex)
-      .countDocuments();
+    const result = await Customer.find().where("customerName").regex(regex);
     return { count, result };
   } catch (error) {
     return { errorStatus: true, error };
@@ -142,6 +156,7 @@ module.exports = {
   updateCustomer,
   deleteCustomer,
   getSearchResult,
+  getSearchResultByMobile,
   getSingleCustomerByMobileNo,
   getCustomersOnRegex,
   getCustomersHavingCredit,

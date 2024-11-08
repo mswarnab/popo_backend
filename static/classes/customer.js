@@ -10,8 +10,8 @@ class Customer {
     this.customerName = customerName.trim();
     this.customerContactNo = mobileNo.toString().trim();
     this.customerAddress = address.trim();
-    (this.lastPurchaseDate = lastPurchaseDate.trim()),
-      (this.totalCreditAmount = totalCreditAmount.toString().trim());
+    this.lastPurchaseDate = lastPurchaseDate.trim();
+    this.totalCreditAmount = totalCreditAmount.toString().trim();
     this.__v = __v;
   }
 }
