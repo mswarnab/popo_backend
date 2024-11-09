@@ -445,10 +445,7 @@ router.post("/", async (req, res) => {
         };
       }
     }
-    console.log(customerObject);
-
     if (!customerObject && !customerError.error) {
-      console.log("a");
       if (customerName) {
         customerObject = new Customer(
           customerName,
@@ -466,7 +463,6 @@ router.post("/", async (req, res) => {
       }
     }
 
-    console.log(customerObject);
     if (!products) {
       return res
         .status(httpCodes.BAD_REQUEST)
@@ -772,10 +768,8 @@ router.put("/:id", async (req, res) => {
     saleDetails.cerditAmount = (
       parseFloat(saleDetails.cerditAmount) - parseFloat(paidAmount)
     ).toFixed(2);
-    saleDetails.paidAmount = (
-      parseFloat(saleDetails.paidAmount) +
-      parseFloat(saleDetails.paidAmount) +
-      parseFloat(paidAmount)
+    saleDetails.paidAmount = parseFloat(
+      parseFloat(saleDetails.paidAmount) + parseFloat(paidAmount)
     ).toFixed(2);
 
     saleDetails.__v += 1;
@@ -814,7 +808,7 @@ router.put("/:id", async (req, res) => {
     }
     const updatedCustomer = await customerRepository.updateCustomer(
       customerObject.result._id,
-      customerObject
+      customerObject.result
     );
 
     if (!updatedCustomer) {

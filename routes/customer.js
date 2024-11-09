@@ -112,10 +112,8 @@ router.get("/search", async (req, res) => {
 
     let customerResult;
     if (isNaN(pattern)) {
-      console.log("non", pattern);
       customerResult = await customerRepository.getSearchResult(pattern);
     } else {
-      console.log("yes", pattern);
       customerResult = await customerRepository.getSearchResultByMobile(
         pattern
       );
@@ -388,8 +386,6 @@ router.post("/", async (req, res) => {
       0,
       0
     );
-
-    console.log(customerContactNo);
 
     // Validate request body
     const { error } = validateReqBody(customer);
