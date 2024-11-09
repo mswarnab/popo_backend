@@ -631,7 +631,7 @@ router.delete("/:id", async (req, res) => {
     productArray.result.forEach((result) => {
       if (result.purchaseQuantity != result.quantity) {
         errorInProductArray.error = true;
-        errorInProductArray.product = e;
+        errorInProductArray.product = result;
       }
     });
 
