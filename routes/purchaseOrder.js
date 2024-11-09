@@ -482,7 +482,7 @@ router.put("/:id", async (req, res) => {
 
     const { paidAmount } = req.body;
 
-    if (isNaN(paidAmount)) {
+    if (isNaN(paidAmount) || parseFloat(paidAmount) < 0) {
       return res
         .status(httpCodes.BAD_REQUEST)
         .send(
@@ -677,7 +677,6 @@ router.delete("/:id", async (req, res) => {
       existingPurchaseOrder.cerditAmount;
     supplierDetails.result.__v += 1;
 
-    console.log(supplierDetails.result);
     const updatedSupplier = await supplierRepository.updateSupplier(
       supplierDetails.result._id,
       supplierDetails.result
