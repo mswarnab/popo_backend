@@ -37,7 +37,7 @@ app.use(
 //     credentials: true,
 //   })
 // );
-https: app.use(cookieParser());
+app.use(cookieParser());
 
 app.use(validateAuthorization);
 
