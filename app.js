@@ -23,21 +23,21 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 
-// app.use(
-//   cors({
-//     origin: "https://titirpetshop-1.vercel.app",
-//     credentials: true,
-//   })
-// );
-
-//
 app.use(
   cors({
-    origin: "http://localhost:5174",
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
-app.use(cookieParser());
+//titirpetshop-1-ez7f.vercel.app/
+//
+// app.use(
+//   cors({
+//     origin: "http://localhost:5174",
+//     credentials: true,
+//   })
+// );
+https: app.use(cookieParser());
 
 // app.use(validateAuthorization);
 
