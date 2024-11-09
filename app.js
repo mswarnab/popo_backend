@@ -39,7 +39,7 @@ app.use(
 // );
 https: app.use(cookieParser());
 
-// app.use(validateAuthorization);
+app.use(validateAuthorization);
 
 app.use(routes.AUTH, authRouter);
 app.use(routes.STOCK, stockRouter);
