@@ -673,8 +673,10 @@ router.delete("/:id", async (req, res) => {
         );
     }
 
-    supplierDetails.result.totalCreditAmount.toFixed(2) -=
-      existingPurchaseOrder.cerditAmount;
+    supplierDetails.result.totalCreditAmount = (
+      parseFloat(supplierDetails.result.totalCreditAmount) -
+      parseFloat(existingPurchaseOrder.cerditAmount)
+    ).toFixed(2);
     supplierDetails.result.__v += 1;
 
     const updatedSupplier = await supplierRepository.updateSupplier(
