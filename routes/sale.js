@@ -763,8 +763,10 @@ router.put("/:id", async (req, res) => {
         );
     }
 
-    customerObject.result.totalCreditAmount -=
-      parseFloat(paidAmount).toFixed(2);
+    customerObject.result.totalCreditAmount = (
+      parseFloat(customerObject.result.totalCreditAmount) -
+      parseFloat(paidAmount)
+    ).toFixed(2);
     customerObject.result.__v += 1;
 
     saleDetails.cerditAmount = (
