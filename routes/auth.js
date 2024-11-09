@@ -93,6 +93,8 @@ router.post("/login", async (req, res) => {
 
           // Ensures the cookie is sent over HTTPS
           sameSite: "none", // Allow cross-site cookies
+          path: "/", // Set the path to the same as when the cookie was set
+          domain: "popo-backend-1.onrender.com", // If the cookie was set with a specific domain, use it here
         })
         .status(httpCodes.OK)
         .send(
@@ -138,25 +140,26 @@ router.post("/login", async (req, res) => {
 });
 router.post("/logout", (req, res) => {
   try {
-    return res.send(req.cookies.x_auth_token);
-    // return res
-    //   .clearCookie("x_auth_token", {
-    //     path: "/", // Set the path to the same as when the cookie was set
-    //     domain: "popo-backend-1.onrender.com", // If the cookie was set with a specific domain, use it here
-    //     secure: true, // If the cookie was set with the "secure" flag, set it here
-    //     httpOnly: true, // If the cookie was set with the "httpOnly" flag, set it here
-    //   })
-    //   .status(httpCodes.OK)
-    //   .send(
-    //     new ResponseObject(
-    //       httpCodes.OK,
-    //       req.method,
-    //       "User is successfully logged out",
-    //       "auth",
-    //       req.url,
-    //       null
-    //     )
-    //   );
+    // return res.send(req.cookies.x_auth_token);
+    return res
+      .clearCookie("x_auth_token", {
+        path: "/", // Set the path to the same as when the cookie was set
+        domain: "popo-backend-1.onrender.com", // If the cookie was set with a specific domain, use it here
+        secure: true, // If the cookie was set with the "secure" flag, set it here
+        httpOnly: true, // If the cookie was set with the "httpOnly" flag, set it here
+        sameSite: "none", // Allow cross-site cookies
+      })
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "User is successfully logged out",
+          "auth",
+          req.url,
+          null
+        )
+      );
   } catch (error) {
     console.log(error);
     return res
