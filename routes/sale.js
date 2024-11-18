@@ -574,7 +574,7 @@ router.post("/", async (req, res) => {
 
     const sale = new Sale(
       billNumber,
-      customerObject._id?.toString() || dummyCustomerIdentifier,
+      customerObject?._id.toString() || dummyCustomerIdentifier,
       customerObject.customerContactNo || dummyMobileNumber,
       customerObject.customerName || dummyCustomerIdentifier,
       dateOfSale,
