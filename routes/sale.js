@@ -650,7 +650,7 @@ router.post("/", async (req, res) => {
       }
     });
 
-    sale.customerId = customerObject._id;
+    sale.customerId = customerObject?._id || dummyCustomerIdentifier;
     //otherwise create product Repository is invoked.
     const saleDetailObject = await saleRepository.createSale(sale);
 
