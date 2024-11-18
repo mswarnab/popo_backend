@@ -437,9 +437,11 @@ router.post("/", async (req, res) => {
 
     const supplierObject = supplierDetails.result;
 
-    if (creditAmount) {
-      supplierObject.totalCreditAmount += creditAmount.toFixed(2);
-      await supplierRepository.updateSupplier(
+    if (creditAmount > 0) {
+      supplierObject.totalCreditAmount = (
+        parseFloat(supplierObject.totalCreditAmount) + parseFloat(creditAmount)
+      ).toFixed(2);
+      const updatedSupplier = await supplierRepository.updateSupplier(
         supplierObject._id,
         supplierObject
       );
