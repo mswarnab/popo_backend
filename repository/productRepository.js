@@ -151,6 +151,8 @@ const getExpiredProducts = async (
       .in(typeof category == "object" ? category : [category])
       .where("expDate")
       .lte(notificationDate)
+      .where("expDate")
+      .ne("19700101")
       .where("quantity")
       .gt(0)
       .countDocuments();
@@ -160,6 +162,8 @@ const getExpiredProducts = async (
       .in(typeof category == "object" ? category : [category])
       .where("expDate")
       .lte(notificationDate)
+      .where("expDate")
+      .ne("19700101")
       .where("quantity")
       .gt(0)
       .sort({ expDate: 1 })
