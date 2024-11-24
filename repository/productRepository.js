@@ -56,6 +56,67 @@ const getAllProducts = async (sortObject, filterObject, page) => {
   }
 };
 
+const getGroupProducts = async (page = 0, category = productCategory) => {
+  try {
+    const count = await Product.aggregate([
+      {
+        $match: { category: { $in: category } },
+      },
+      {
+        $group: {
+          _id: "$productName",
+          totalQuantity: {
+            $sum: "$quantity",
+          },
+          products: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          totalQuantity: 1,
+          products: 1,
+        },
+      },
+      {
+        $count: "count",
+      },
+    ]);
+
+    const result = await Product.aggregate([
+      {
+        $match: { category: { $in: category } },
+      },
+      {
+        $group: {
+          _id: "$productName",
+          totalQuantity: {
+            $sum: "$quantity",
+          },
+          products: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          // productName: 1,
+          totalQuantity: 1,
+          products: 1,
+        },
+      },
+      {
+        $skip: 20 * page,
+      },
+      {
+        $limit: 20,
+      },
+    ]);
+    return { count, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
 const deleteProduct = async (id) => {
   try {
     return await Product.findByIdAndDelete(id);
@@ -196,6 +257,7 @@ const getAllProductsBasedOnIdArray = async (productArray) => {
 
 module.exports = {
   getAllProducts,
+  getGroupProducts,
   getSingleProduct,
   createProduct,
   createBulkProduct,

@@ -152,6 +152,22 @@ const deleteSale = async (id) => {
   }
 };
 
+const getCustomerMonthlyBills = async (startDate, endDate, customerId) => {
+  try {
+    const count = await Sale.find({
+      customerId,
+      dateOfSale: { $gte: startDate, $lte: endDate },
+    }).countDocuments();
+    const result = await Sale.find({
+      customerId,
+      dateOfSale: { $gte: startDate, $lte: endDate },
+    });
+
+    return { count, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
 const getSaleBasedOnCustomerId = async (page, id) => {
   try {
     const count = await Sale.find()
@@ -202,6 +218,7 @@ module.exports = {
   createSale,
   updateSale,
   deleteSale,
+  getCustomerMonthlyBills,
   getTotalSaleOfCustomers,
   getSaleBasedOnCustomerId,
   getTotalSaleAmountInLastWeek,

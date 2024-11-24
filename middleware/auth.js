@@ -23,7 +23,6 @@ const validateAuthorization = (req, res, next) => {
         );
     }
 
-    // const token = req.headers["x-auth-token"];
     const token = req.cookies.x_auth_token;
     if (!token) {
       return res

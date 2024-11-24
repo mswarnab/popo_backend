@@ -653,7 +653,7 @@ router.post("/", async (req, res) => {
     sale.customerId = customerObject?._id || dummyCustomerIdentifier;
     //otherwise create product Repository is invoked.
     const saleDetailObject = await saleRepository.createSale(sale);
-
+    //{$expr :{$ne:["$quantity","$purchaseQuantity"]}}
     if (saleDetailObject?.errorStatus) {
       return res
         .status(httpCodes.INTERNAL_SERVER_ERROR)

@@ -285,6 +285,8 @@ router.post("/", async (req, res) => {
         discount,
         0
       );
+
+      // console.log(product);
       // Validate Stocks
       const { error } = validateReqBodyProduct(product);
       if (error) {
@@ -432,6 +434,7 @@ router.post("/", async (req, res) => {
     }
 
     productArary.forEach(async (e) => {
+      console.log(e);
       await productRepository.createProduct(e);
     });
 

@@ -4,8 +4,116 @@ const Customer = require("../static/classes/customer");
 const validateReqBody = require("../static/validation/validateCustomer");
 const ResponseObject = require("../static/classes/ResponseObject");
 const ErrorObject = require("../static/classes/errorObject");
+const saleRepository = require("../repository/saleRepository");
 
 const { httpCodes } = require("../static");
+const dayjs = require("dayjs");
+
+router.get("/monthlybill/:customerId", async (req, res) => {
+  try {
+    const { customerId } = req.params;
+
+    const customerData = await customerRepository.getSingleCustomer(customerId);
+    if (customerData.errorStatus) {
+      return res
+        .status(httpCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "CU0711",
+            "Something went wrong.",
+            "customer",
+            req.url,
+            req.method,
+            saleDetails.error?.message
+          )
+        );
+    }
+
+    if (!customerData.result) {
+      return res
+        .status(httpCodes.UNAUTHORIZED)
+        .send(
+          new ErrorObject(
+            httpCodes.UNAUTHORIZED,
+            "CU0655",
+            "You are not authorized to view this page.",
+            "customer",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    const currentDate = dayjs().format("YYYYMMDD");
+    const monthStartingDate = currentDate.substring(0, 6) + "01";
+    const saleDetails = await saleRepository.getCustomerMonthlyBills(
+      monthStartingDate,
+      currentDate,
+      customerId
+    );
+
+    if (saleDetails.errorStatus) {
+      return res
+        .status(httpCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "CU071",
+            "Something went wrong.",
+            "customer",
+            req.url,
+            req.method,
+            saleDetails.error?.message
+          )
+        );
+    }
+
+    if (!saleDetails.count) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "CU065",
+            "So sale bills found for this customer.",
+            "customer",
+            req.url,
+            req.method,
+            customerData.result
+          )
+        );
+    }
+    return res.status(httpCodes.OK).send(
+      new ResponseObject(
+        httpCodes.OK,
+        req.method,
+        "Monthly bill is generated for the customer.",
+        "customer",
+        req.url,
+        {
+          saleDetails: { count, result },
+          customerDetails: customerData.result,
+        }
+      )
+    );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "CU072",
+          "Something went wrong.",
+          "customer",
+          req.url,
+          req.method,
+          error.message
+        )
+      );
+  }
+});
 
 router.get("/totaldue", async (req, res) => {
   try {

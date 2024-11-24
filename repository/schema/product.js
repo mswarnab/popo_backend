@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
   purchaseOrderId: String,
   mfrCode: String,
   hsnCode: String,
-  invoiceNumner: String,
+  invoiceNumber: String,
   dateOfPruchase: String,
   mfgDate: String,
   expDate: String,
