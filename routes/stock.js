@@ -345,6 +345,7 @@ router.get("/", async (req, res) => {
       filterByPurchaseOrderId,
       filterByInvoiceNumber,
       filterByHsnCode,
+      filterByProductName,
       page,
     } = req.query;
 
@@ -431,8 +432,10 @@ router.get("/", async (req, res) => {
         )
       );
   } catch (error) {
-    return res.status(
-      httpCodes.INTERNAL_SERVER_ERROR.send(
+    console.log(error);
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
         new ErrorObject(
           httpCodes.INTERNAL_SERVER_ERROR,
           "ST008",
@@ -442,8 +445,7 @@ router.get("/", async (req, res) => {
           req.method,
           error
         )
-      )
-    );
+      );
   }
 });
 
