@@ -40,7 +40,6 @@ app.use(
 app.use(cookieParser());
 
 app.use(validateAuthorization);
-
 app.use(routes.AUTH, authRouter);
 app.use(routes.STOCK, stockRouter);
 app.use(routes.CUSTOMER, customerRouter);
