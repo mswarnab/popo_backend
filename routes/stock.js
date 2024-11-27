@@ -344,6 +344,8 @@ router.get("/", async (req, res) => {
       filterBySupplierName,
       filterByPurchaseOrderId,
       filterByInvoiceNumber,
+      filterByHsnCode,
+      filterByProductName,
       page,
     } = req.query;
 
@@ -374,7 +376,10 @@ router.get("/", async (req, res) => {
       filterObject.category = filterByCategory;
     }
     if (filterBySupplierName) {
-      filterObject.supplierName = filterBySupplierName;
+      filterObject.supplierName = {
+        $regex: filterBySupplierName,
+        $options: "i",
+      };
     }
 
     if (filterByPurchaseOrderId) {
@@ -383,6 +388,14 @@ router.get("/", async (req, res) => {
 
     if (filterByInvoiceNumber) {
       filterObject.invoiceNumber = filterByInvoiceNumber;
+    }
+
+    if (filterByHsnCode) {
+      filterObject.hsnCode = filterByHsnCode;
+    }
+
+    if (filterByProductName) {
+      filterObject.productName = { $regex: filterByProductName, $options: "i" };
     }
 
     const { count, result } = await productRepository.getAllProducts(
@@ -419,8 +432,10 @@ router.get("/", async (req, res) => {
         )
       );
   } catch (error) {
-    return res.status(
-      httpCodes.INTERNAL_SERVER_ERROR.send(
+    console.log(error);
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
         new ErrorObject(
           httpCodes.INTERNAL_SERVER_ERROR,
           "ST008",
@@ -430,8 +445,7 @@ router.get("/", async (req, res) => {
           req.method,
           error
         )
-      )
-    );
+      );
   }
 });
 
