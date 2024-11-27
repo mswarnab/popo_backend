@@ -44,7 +44,6 @@ const getAllProducts = async (sortObject, filterObject, page) => {
 
     filterObject = { ...filterObject, quantity: { $gt: 0 } };
     count = await Product.find(filterObject).countDocuments();
-
     result = await Product.find(filterObject)
       .sort(sortObject)
       .skip(20 * parseFloat(page))
