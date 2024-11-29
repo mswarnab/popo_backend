@@ -63,6 +63,19 @@ const getTotalSaleAmountInLastMonth = async (
   }
 };
 
+// const getMonthlyBills = async (startDate,endDate)=>{
+//   try {
+//     await Sale.find({
+//       dateOfSale:{
+//         $gte: startDate,
+//         $lt:endDate
+//       }
+//     })
+//   } catch (error) {
+
+//   }
+
+// }
 const createSale = async (saleObject) => {
   try {
     const sale = new Sale(saleObject);
@@ -152,15 +165,15 @@ const deleteSale = async (id) => {
   }
 };
 
-const getCustomerMonthlyBills = async (startDate, endDate, customerId) => {
+const getCustomerMonthlyBills = async (customerId, startDate, endDate) => {
   try {
     const count = await Sale.find({
       customerId,
-      dateOfSale: { $gte: startDate, $lte: endDate },
+      dateOfSale: { $gte: startDate, $lt: endDate },
     }).countDocuments();
     const result = await Sale.find({
       customerId,
-      dateOfSale: { $gte: startDate, $lte: endDate },
+      dateOfSale: { $gte: startDate, $lt: endDate },
     });
 
     return { count, result };

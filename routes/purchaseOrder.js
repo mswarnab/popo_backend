@@ -21,6 +21,8 @@ router.get("/", async (req, res) => {
       sortByDateOfPurchase = -1,
       sortByGrandTotal,
       filterByInvoice,
+      filterBySupplierName,
+      filterByOnlyDue,
       filterBySuplierId,
       filterByGrandTotalLte,
       filterByGrandTotalGte,
@@ -41,6 +43,18 @@ router.get("/", async (req, res) => {
 
     if (filterByInvoice) {
       filterObject.invoiceNumber = filterByInvoice;
+    }
+
+    if (filterBySupplierName) {
+      filterObject.supplierName = {
+        $regex: filterBySupplierName,
+        $options: "i",
+      };
+    }
+    if (filterByOnlyDue) {
+      filterObject.cerditAmount = {
+        $gte: filterByOnlyDue,
+      };
     }
 
     if (filterBySuplierId) {
