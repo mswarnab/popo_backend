@@ -6,76 +6,76 @@ const ResponseObject = require("../static/classes/ResponseObject");
 const ErrorObject = require("../static/classes/errorObject");
 const Product = require("../static/classes/product");
 const validateReqBody = require("../static/validation/validateProduct");
-const purchaseOrderRepository = require("../repository/purchaseOrderRepository");
+// const purchaseOrderRepository = require("../repository/purchaseOrderRepository");
 
-router.get("/updateall", async (req, res) => {
-  try {
-    const { result } = await productRepository.getAllProducts();
-    result.forEach(async (e) => {
-      console.log(e);
-      const purchaseOrder =
-        await purchaseOrderRepository.getSinglePurchaseOrder(e.purchaseOrderId);
+// router.get("/updateall", async (req, res) => {
+//   try {
+//     const { result } = await productRepository.getAllProducts();
+//     result.forEach(async (e) => {
+//       // console.log(e);
+//       const purchaseOrder =
+//         await purchaseOrderRepository.getSinglePurchaseOrder(e.purchaseOrderId);
 
-      const { invoiceNumber } = purchaseOrder;
-      // const {
-      //   productName,
-      //   category,
-      //   supplierId,
-      //   supplierName,
-      //   purchaseOrderId,
-      //   mfrCode,
-      //   hsnCode,
-      //   invoiceNumber,
-      //   dateOfPruchase,
-      //   mfgDate,
-      //   expDate,
-      //   purchaseQuantity,
-      //   quantity,
-      //   rate,
-      //   sgst,
-      //   cgst,
-      //   mrp,
-      //   batchNumber,
-      //   discount,
-      //   __v,
-      // } = e;
+//       const { invoiceNumber } = purchaseOrder;
+//       // const {
+//       //   productName,
+//       //   category,
+//       //   supplierId,
+//       //   supplierName,
+//       //   purchaseOrderId,
+//       //   mfrCode,
+//       //   hsnCode,
+//       //   invoiceNumber,
+//       //   dateOfPruchase,
+//       //   mfgDate,
+//       //   expDate,
+//       //   purchaseQuantity,
+//       //   quantity,
+//       //   rate,
+//       //   sgst,
+//       //   cgst,
+//       //   mrp,
+//       //   batchNumber,
+//       //   discount,
+//       //   __v,
+//       // } = e;
 
-      const product = e;
-      product.invoiceNumber = invoiceNumber;
-      // const product = new Product(
-      //   productName,
-      //   category,
-      //   supplierId,
-      //   supplierName,
-      //   purchaseOrderId,
-      //   mfrCode,
-      //   hsnCode,
-      //   invoiceNumberPurchaseOrder,
-      //   dateOfPruchase,
-      //   mfgDate,
-      //   expDate,
-      //   purchaseQuantity,
-      //   quantity,
-      //   rate,
-      //   sgst,
-      //   cgst,
-      //   mrp,
-      //   batchNumber,
-      //   discount,
-      //   __v
-      // );
+//       const product = e;
+//       product.invoiceNumber = invoiceNumber;
+//       // const product = new Product(
+//       //   productName,
+//       //   category,
+//       //   supplierId,
+//       //   supplierName,
+//       //   purchaseOrderId,
+//       //   mfrCode,
+//       //   hsnCode,
+//       //   invoiceNumberPurchaseOrder,
+//       //   dateOfPruchase,
+//       //   mfgDate,
+//       //   expDate,
+//       //   purchaseQuantity,
+//       //   quantity,
+//       //   rate,
+//       //   sgst,
+//       //   cgst,
+//       //   mrp,
+//       //   batchNumber,
+//       //   discount,
+//       //   __v
+//       // );
 
-      const updatedProduct = await productRepository.updateProduct(
-        e._id,
-        product
-      );
-    });
-    res.send("Update Done");
-  } catch (error) {
-    console.log(error);
-    res.send("Error");
-  }
-});
+//       const updatedProduct = await productRepository.updateProduct(
+//         e._id,
+//         product
+//       );
+//     });
+//     res.send("Update Done");
+//   } catch (error) {
+//     console.log(error);
+//     res.send("Error");
+//   }
+// });
 
 router.get("/getexpiredproducts", async (req, res) => {
   try {
