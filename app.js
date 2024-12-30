@@ -17,11 +17,11 @@ const dayjs = require("dayjs");
 const { routes } = require("./static");
 const validateAuthorization = require("./middleware/auth");
 
-const corsOptions = {
-  origin: "https://titirpetshop.onrender.com/",
-  credentials: true,
-  optionsSuccessStatus: 204,
-};
+// const corsOptions = {
+//   origin: "https://titirpetshop.onrender.com/",
+//   credentials: true,
+//   optionsSuccessStatus: 204,
+// };
 
 app.use(
   cors({

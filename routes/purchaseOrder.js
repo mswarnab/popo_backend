@@ -202,6 +202,7 @@ router.post("/", async (req, res) => {
       dueDate,
       addLessAmount,
       crDrNote,
+      finalAmount,
     } = purchaseOrderBody;
 
     if (!supplierId) {
@@ -368,7 +369,7 @@ router.post("/", async (req, res) => {
       dueDate,
       addLessAmount,
       crDrNote,
-      grandTotalAmount.toFixed(2),
+      parseFloat(finalAmount).toFixed(),
       0
     );
 
