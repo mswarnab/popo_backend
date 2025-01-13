@@ -1,5 +1,7 @@
 const router = require("express").Router();
 const supplierRepository = require("../repository/supplierRepository");
+const purchaseOrderRepository = require("../repository/purchaseOrderRepository");
+
 const Supplier = require("../static/classes/supplier");
 const { getCurrentDate } = require("../static/functions/getDate");
 const validateReqBody = require("../static/validation/validateSupplier");
@@ -539,19 +541,79 @@ router.put("/:id", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-  return res
-    .status(httpCodes.FORBIDDEN)
-    .send(
-      new ErrorObject(
-        httpCodes.FORBIDDEN,
-        "SU005",
-        "METHOD NOT ALLOWED.",
-        "supplier",
-        req.url,
-        req.method,
-        null
-      )
-    );
+  try {
+    const { id } = req.params;
+    const { result } = await supplierRepository.getSingleSupplier(id);
+    if (!result) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "SU055",
+            "Supplier does not exit",
+            "supplier",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    const { result: result2 } =
+      await purchaseOrderRepository.getAllPurchaseOrder(
+        "00000000",
+        "99999999",
+        {},
+        { supplierId: id }
+      );
+
+    if (result2.length) {
+      return res
+        .status(httpCodes.FORBIDDEN)
+        .send(
+          new ErrorObject(
+            httpCodes.FORBIDDEN,
+            "SU056",
+            "METHOD NOT ALLOWED.",
+            "supplier",
+            req.url,
+            req.method,
+            result2
+          )
+        );
+    }
+
+    const deletedSupplier = await supplierRepository.deleteSupplier(id);
+
+    //Successful response
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Supplier deleted successfully.",
+          "supplier",
+          req.url,
+          { count: 1, result2 }
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "SU057",
+          "Something Went Wrong.",
+          "supplier",
+          req.url,
+          req.method,
+          error.message
+        )
+      );
+  }
 });
 
 module.exports = router;

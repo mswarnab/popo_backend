@@ -369,7 +369,7 @@ router.post("/", async (req, res) => {
       dueDate,
       addLessAmount,
       crDrNote,
-      parseFloat(finalAmount).toFixed(),
+      parseFloat(finalAmount).toFixed(2),
       0
     );
 
