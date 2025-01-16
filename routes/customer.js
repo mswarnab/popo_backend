@@ -378,8 +378,28 @@ router.get("/creditamount", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { page } = req.query;
+    const { filterByCustomerName, filterByPhoneNumber, page } = req.query;
+
+    let sortObject = {};
+    let filterObject = {};
+
+    if (filterByCustomerName) {
+      filterObject.customerName = {
+        $regex: filterByCustomerName,
+        $options: "i",
+      };
+    }
+
+    if (filterByPhoneNumber) {
+      filterObject.customerContactNo = {
+        $regex: filterByPhoneNumber,
+        $options: "i",
+      };
+    }
+
     const { count, result, error } = await customerRepository.getAllCustomer(
+      sortObject,
+      filterObject,
       page
     );
     if (!count) {

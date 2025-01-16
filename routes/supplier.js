@@ -215,8 +215,27 @@ router.get("/creditamount", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { page } = req.params;
+    const { filterBySupplierName, filterByPhoneNumber, page } = req.params;
+    let sortObject = {};
+    let filterObject = {};
+
+    if (filterBySupplierName) {
+      filterObject.supplierName = {
+        $regex: filterBySupplierName,
+        $options: "i",
+      };
+    }
+
+    if (filterByPhoneNumber) {
+      filterObject.supplierContactNo = {
+        $regex: filterByPhoneNumber,
+        $options: "i",
+      };
+    }
+
     const { count, error, result } = await supplierRepository.getAllSupplier(
+      sortObject,
+      filterObject,
       page
     );
     if (!count) {

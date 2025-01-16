@@ -57,11 +57,11 @@ const getSingleSupplier = async (id) => {
   }
 };
 
-const getAllSupplier = async (page = 0) => {
+const getAllSupplier = async (sortObject, filterObject, page = 0) => {
   try {
-    const count = await Supplier.find().countDocuments();
+    const count = await Supplier.find(filterObject).countDocuments();
 
-    const result = await Supplier.find()
+    const result = await Supplier.find(filterObject)
       .sort({ lastPurchaseDate: -1 })
       .skip(20 * parseFloat(page))
       .limit(20);

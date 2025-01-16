@@ -57,11 +57,11 @@ const getSingleCustomerByMobileNo = async (mobileNo) => {
   }
 };
 
-const getAllCustomer = async (page = 0) => {
+const getAllCustomer = async (sortObject, filterObject, page = 0) => {
   try {
-    const count = await Customer.find().countDocuments();
+    const count = await Customer.find(filterObject).countDocuments();
 
-    const result = await Customer.find()
+    const result = await Customer.find(filterObject)
       .sort({ lastPurchaseDate: -1 })
       .skip(20 * parseFloat(page))
       .limit(20);
