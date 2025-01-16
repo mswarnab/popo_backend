@@ -215,7 +215,7 @@ router.get("/creditamount", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { filterBySupplierName, filterByPhoneNumber, page } = req.params;
+    const { filterBySupplierName, filterByPhoneNumber, page } = req.query;
     let sortObject = {};
     let filterObject = {};
 
