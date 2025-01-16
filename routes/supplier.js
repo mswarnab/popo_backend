@@ -227,10 +227,7 @@ router.get("/", async (req, res) => {
     }
 
     if (filterByPhoneNumber) {
-      filterObject.supplierContactNo = {
-        $regex: filterByPhoneNumber,
-        $options: "i",
-      };
+      filterObject.supplierContactNo = filterByPhoneNumber;
     }
 
     const { count, error, result } = await supplierRepository.getAllSupplier(
