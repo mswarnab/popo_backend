@@ -84,13 +84,13 @@ const getSearchResult = async (pattern) => {
     const count = await Customer.find({
       customerName: { $regex: pattern, $options: "i" },
     })
-      .select(["customerName", "customerContactNo"])
+      .select(["customerName", "customerContactNo", "totalCreditAmount"])
 
       .countDocuments();
 
     const result = await Customer.find({
       customerName: { $regex: pattern, $options: "i" },
-    }).select(["customerName", "customerContactNo"]);
+    }).select(["customerName", "customerContactNo", "totalCreditAmount"]);
 
     return { count, result };
   } catch (error) {
@@ -103,13 +103,13 @@ const getSearchResultByMobile = async (pattern) => {
     const count = await Customer.find({
       customerContactNo: { $regex: pattern, $options: "i" },
     })
-      .select(["customerName", "customerContactNo"])
+      .select(["customerName", "customerContactNo", "totalCreditAmount"])
 
       .countDocuments();
 
     const result = await Customer.find({
       customerContactNo: { $regex: pattern, $options: "i" },
-    }).select(["customerName", "customerContactNo"]);
+    }).select(["customerName", "customerContactNo", "totalCreditAmount"]);
 
     return { count, result };
   } catch (error) {

@@ -706,19 +706,77 @@ router.put("/:id", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-  return res
-    .status(httpCodes.FORBIDDEN)
-    .send(
-      new ErrorObject(
-        httpCodes.FORBIDDEN,
-        "CU006",
-        "METHOD NOT ALLOWED.",
-        "customer",
-        req.url,
-        req.method,
-        null
-      )
+  try {
+    const { id } = req.params;
+    const { result } = await customerRepository.getSingleCustomer(id);
+    if (!result) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "CU055",
+            "Customer does not exit",
+            "customer",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    const { result: result2 } = await saleRepository.getSaleBasedOnCustomerId(
+      0,
+      id
     );
+
+    console.log(result2);
+    if (result2.length) {
+      return res
+        .status(httpCodes.FORBIDDEN)
+        .send(
+          new ErrorObject(
+            httpCodes.FORBIDDEN,
+            "CU056",
+            "METHOD NOT ALLOWED.",
+            "customer",
+            req.url,
+            req.method,
+            result2
+          )
+        );
+    }
+
+    const deletedCustomer = await customerRepository.deleteCustomer(id);
+
+    //Successful response
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Customer deleted successfully.",
+          "customer",
+          req.url,
+          { count: 1, result2 }
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "CU057",
+          "Something Went Wrong.",
+          "customer",
+          req.url,
+          req.method,
+          error.message
+        )
+      );
+  }
 });
 
 module.exports = router;
