@@ -169,12 +169,12 @@ const getCustomerMonthlyBills = async (customerId, startDate, endDate) => {
   try {
     const count = await Sale.find({
       customerId,
-      dateOfSale: { $gte: startDate, $lt: endDate },
+      dateOfSale: { $gte: startDate, $lte: endDate },
       cerditAmount: { $gte: 1 },
     }).countDocuments();
     const result = await Sale.find({
       customerId,
-      dateOfSale: { $gte: startDate, $lt: endDate },
+      dateOfSale: { $gte: startDate, $lte: endDate },
       cerditAmount: { $gte: 1 },
     });
 

@@ -25,7 +25,7 @@ router.get("/monthlybill/:customerId", async (req, res) => {
             "customer",
             req.url,
             req.method,
-            saleDetails.error?.message
+            customerId
           )
         );
     }
@@ -49,11 +49,12 @@ router.get("/monthlybill/:customerId", async (req, res) => {
     const currentDate = dayjs().format("YYYYMMDD");
     const monthStartingDate = currentDate.substring(0, 6) + "01";
     const saleDetails = await saleRepository.getCustomerMonthlyBills(
+      customerId,
       monthStartingDate,
-      currentDate,
-      customerId
+      currentDate
     );
 
+    // console.log(currentDate, monthStartingDate, saleDetails);
     if (saleDetails.errorStatus) {
       return res
         .status(httpCodes.INTERNAL_SERVER_ERROR)
@@ -77,7 +78,7 @@ router.get("/monthlybill/:customerId", async (req, res) => {
           new ErrorObject(
             httpCodes.NOT_FOUND,
             "CU065",
-            "So sale bills found for this customer.",
+            "No sale bills found for this customer.",
             "customer",
             req.url,
             req.method,
@@ -93,12 +94,13 @@ router.get("/monthlybill/:customerId", async (req, res) => {
         "customer",
         req.url,
         {
-          saleDetails: { count, result },
+          saleDetails,
           customerDetails: customerData.result,
         }
       )
     );
   } catch (error) {
+    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
