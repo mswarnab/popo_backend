@@ -47,7 +47,9 @@ router.get("/monthlybill/:customerId", async (req, res) => {
     }
 
     const currentDate = dayjs().format("YYYYMMDD");
-    const monthStartingDate = currentDate.substring(0, 6) + "01";
+    // const monthStartingDate = currentDate.substring(0, 6) + "01";
+    const monthStartingDate = "00000000";
+
     const saleDetails = await saleRepository.getCustomerMonthlyBills(
       customerId,
       monthStartingDate,
