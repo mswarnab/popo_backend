@@ -276,6 +276,7 @@ router.post("/", async (req, res) => {
         mrp,
         batchNumber,
         discount,
+        schemeDiscount,
       } = element;
 
       const product = new Product(
@@ -297,7 +298,9 @@ router.post("/", async (req, res) => {
         cgst,
         mrp.toString().trim(),
         batchNumber,
+        0,
         discount,
+        schemeDiscount,
         0
       );
 
@@ -307,16 +310,27 @@ router.post("/", async (req, res) => {
       if (error) {
         haveError = error;
       }
+      product.purchasePrice = product.rate;
 
-      totalAmount += product.rate * product.quantity;
+      if (product.discount != "0") {
+        product.purchasePrice =
+          product.purchasePrice * (1 - product.discount / 100);
+      }
+
+      if (product.schemeDiscount != "0") {
+        product.purchasePrice =
+          product.purchasePrice * (1 - product.schemeDiscount / 100);
+      }
+
+      totalAmount += parseFloat(product.purchasePrice * product.quantity);
       grandTotalAmount +=
-        (parseFloat(product.rate) +
+        (parseFloat(product.purchasePrice) +
           parseFloat(product.sgst) +
-          parseFloat(product.cgst) -
-          parseFloat(discount || 0)) *
-        product.quantity;
+          parseFloat(product.cgst)) *
+        parseInt(product.quantity);
 
-      discountPO += parseFloat(product.discount);
+      // discountPO +=
+      //   parseFloat(product.discount) + parseFloat(product.schemeDiscount);
       sgstPO += parseFloat(product.sgst) * parseFloat(product.quantity);
       cgstPO += parseFloat(product.cgst) * parseFloat(product.quantity);
 
@@ -359,17 +373,17 @@ router.post("/", async (req, res) => {
       supplierId,
       supplierDetails.result.supplierName,
       dateOfPruchase,
-      totalAmount.toFixed(2),
-      discountPO.toFixed(2),
+      totalAmount,
+      discountPO,
       sgstPO.toString(),
       cgstPO.toString(),
       paidAmount,
       modeOfPayment,
-      creditAmount.toFixed(2),
+      creditAmount,
       dueDate,
       addLessAmount,
       crDrNote,
-      parseFloat(finalAmount).toFixed(2),
+      parseFloat(finalAmount),
       0
     );
 
@@ -449,16 +463,14 @@ router.post("/", async (req, res) => {
     }
 
     productArary.forEach(async (e) => {
-      console.log(e);
       await productRepository.createProduct(e);
     });
 
     const supplierObject = supplierDetails.result;
 
     if (creditAmount > 0) {
-      supplierObject.totalCreditAmount = (
-        parseFloat(supplierObject.totalCreditAmount) + parseFloat(creditAmount)
-      ).toFixed(2);
+      supplierObject.totalCreditAmount =
+        parseFloat(supplierObject.totalCreditAmount) + parseFloat(creditAmount);
       const updatedSupplier = await supplierRepository.updateSupplier(
         supplierObject._id,
         supplierObject
@@ -693,10 +705,9 @@ router.delete("/:id", async (req, res) => {
         );
     }
 
-    supplierDetails.result.totalCreditAmount = (
+    supplierDetails.result.totalCreditAmount =
       parseFloat(supplierDetails.result.totalCreditAmount) -
-      parseFloat(existingPurchaseOrder.cerditAmount)
-    ).toFixed(2);
+      parseFloat(existingPurchaseOrder.cerditAmount);
     supplierDetails.result.__v += 1;
 
     const updatedSupplier = await supplierRepository.updateSupplier(

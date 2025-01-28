@@ -18,7 +18,9 @@ module.exports = class Product {
     cgst,
     mrp,
     batchNumber,
+    purchasePrice,
     discount,
+    schemeDiscount,
     __v
   ) {
     this.productName = productName.trim();
@@ -37,9 +39,11 @@ module.exports = class Product {
     this.rate = parseFloat(rate).toFixed(2).toString().trim();
     this.sgst = sgst.toString().trim();
     this.cgst = cgst.toString().trim();
-    this.discount = parseFloat(discount).toFixed(2);
     this.mrp = parseFloat(mrp).toFixed(2);
     this.batchNumber = batchNumber.toString().trim();
+    this.purchasePrice = parseFloat(purchasePrice).toFixed(2);
+    this.discount = parseFloat(discount).toFixed(2);
+    this.schemeDiscount = parseFloat(schemeDiscount).toFixed(2);
     this.__v = __v;
   }
 };

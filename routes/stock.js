@@ -8,74 +8,70 @@ const Product = require("../static/classes/product");
 const validateReqBody = require("../static/validation/validateProduct");
 // const purchaseOrderRepository = require("../repository/purchaseOrderRepository");
 
-// router.get("/updateall", async (req, res) => {
-//   try {
-//     const { result } = await productRepository.getAllProducts();
-//     result.forEach(async (e) => {
-//       // console.log(e);
-//       const purchaseOrder =
-//         await purchaseOrderRepository.getSinglePurchaseOrder(e.purchaseOrderId);
+router.get("/updateall", async (req, res) => {
+  try {
+    const { result } = await productRepository.getAllProducts();
+    result.forEach(async (e) => {
+      // const {
+      //   productName,
+      //   category,
+      //   supplierId,
+      //   supplierName,
+      //   purchaseOrderId,
+      //   mfrCode,
+      //   hsnCode,
+      //   invoiceNumber,
+      //   dateOfPruchase,
+      //   mfgDate,
+      //   expDate,
+      //   purchaseQuantity,
+      //   quantity,
+      //   rate,
+      //   sgst,
+      //   cgst,
+      //   mrp,
+      //   batchNumber,
+      //   discount,
+      //   __v,
+      // } = e;
 
-//       const { invoiceNumber } = purchaseOrder;
-//       // const {
-//       //   productName,
-//       //   category,
-//       //   supplierId,
-//       //   supplierName,
-//       //   purchaseOrderId,
-//       //   mfrCode,
-//       //   hsnCode,
-//       //   invoiceNumber,
-//       //   dateOfPruchase,
-//       //   mfgDate,
-//       //   expDate,
-//       //   purchaseQuantity,
-//       //   quantity,
-//       //   rate,
-//       //   sgst,
-//       //   cgst,
-//       //   mrp,
-//       //   batchNumber,
-//       //   discount,
-//       //   __v,
-//       // } = e;
+      const product = e;
+      product.purchasePrice = e.rate;
+      product.schemeDiscount = 0;
+      // const product = new Product(
+      //   productName,
+      //   category,
+      //   supplierId,
+      //   supplierName,
+      //   purchaseOrderId,
+      //   mfrCode,
+      //   hsnCode,
+      //   invoiceNumberPurchaseOrder,
+      //   dateOfPruchase,
+      //   mfgDate,
+      //   expDate,
+      //   purchaseQuantity,
+      //   quantity,
+      //   rate,
+      //   sgst,
+      //   cgst,
+      //   mrp,
+      //   batchNumber,
+      //   discount,
+      //   __v
+      // );
 
-//       const product = e;
-//       product.invoiceNumber = invoiceNumber;
-//       // const product = new Product(
-//       //   productName,
-//       //   category,
-//       //   supplierId,
-//       //   supplierName,
-//       //   purchaseOrderId,
-//       //   mfrCode,
-//       //   hsnCode,
-//       //   invoiceNumberPurchaseOrder,
-//       //   dateOfPruchase,
-//       //   mfgDate,
-//       //   expDate,
-//       //   purchaseQuantity,
-//       //   quantity,
-//       //   rate,
-//       //   sgst,
-//       //   cgst,
-//       //   mrp,
-//       //   batchNumber,
-//       //   discount,
-//       //   __v
-//       // );
-
-//       const updatedProduct = await productRepository.updateProduct(
-//         e._id,
-//         product
-//       );
-//     });
-//     res.send("Update Done");
-//   } catch (error) {
-//     console.log(error);
-//     res.send("Error");
-//   }
-// });
+      const updatedProduct = await productRepository.updateProduct(
+        e._id,
+        product
+      );
+    });
+    res.send("Update Done");
+  } catch (error) {
+    console.log(error);
+    res.send("Error");
+  }
+});
 
 router.get("/getexpiredproducts", async (req, res) => {
   try {
@@ -531,6 +527,8 @@ router.put("/:id", async (req, res) => {
       mrp,
       batchNumber,
       discount,
+      schemeDiscount,
+      purchasePrice,
       purchaseOrderId,
       __v,
     } = req.body;
@@ -551,7 +549,9 @@ router.put("/:id", async (req, res) => {
       cgst.toString(),
       mrp.toString(),
       batchNumber,
+      purchasePrice,
       discount.toString(),
+      schemeDiscount.toString(),
       __v.toString()
     );
 

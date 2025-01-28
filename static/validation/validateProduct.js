@@ -19,7 +19,9 @@ const validateReqBody = (
   cgst,
   mrp,
   batchNumber,
+  purchasePrice,
   discount,
+  schemeDiscount,
   __v
 ) => {
   const schema = Joi.object({
@@ -43,7 +45,9 @@ const validateReqBody = (
     rate: Joi.number().required(),
     sgst: Joi.number().required(),
     cgst: Joi.number().required(),
+    purchasePrice: Joi.number().required(),
     discount: Joi.number().required(),
+    schemeDiscount: Joi.number().required(),
     __v: Joi.number(),
   });
 
@@ -66,7 +70,9 @@ const validateReqBody = (
     cgst,
     mrp,
     batchNumber,
+    purchasePrice,
     discount,
+    schemeDiscount,
     __v
   ));
 };

@@ -21,6 +21,7 @@ const productSchema = new mongoose.Schema({
   purchasePrice: Number,
   mrp: Number,
   batchNumber: String,
+  schemeDiscount: Number,
 });
 
 module.exports = mongoose.model("Product", productSchema);
