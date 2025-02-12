@@ -20,7 +20,7 @@ router.get("/", async (req, res) => {
       endDate,
       sortByDateOfPurchase = -1,
       sortByGrandTotal,
-      filterByInvoice,
+      filterByInvoiceNumber,
       filterBySupplierName,
       filterByOnlyDue,
       filterBySuplierId,
@@ -41,8 +41,8 @@ router.get("/", async (req, res) => {
       sortObject.grandTotalAmount = sortByGrandTotal;
     }
 
-    if (filterByInvoice) {
-      filterObject.invoiceNumber = filterByInvoice;
+    if (filterByInvoiceNumber) {
+      filterObject.invoiceNumber = filterByInvoiceNumber;
     }
 
     if (filterBySupplierName) {
