@@ -221,8 +221,10 @@ router.get("/", async (req, res) => {
       sortByDateOfSale,
       sortByGrandTotalAmount,
       sortByCreditAmount,
-      filterByCustomerMobileNumber,
-      filterByDateOfSale,
+      filterByInvoiceNumber,
+      filterByCustomer,
+      filterByStartDate,
+      filterByEndDate,
       filterByCreditAmount,
     } = req.query;
 
@@ -240,16 +242,39 @@ router.get("/", async (req, res) => {
       sortObject.creditAmount = parseInt(sortByCreditAmount);
     }
 
-    if (filterByCustomerMobileNumber) {
-      filterObject.customerMobileNo = filterByCustomerMobileNumber;
+    //filter by invoice number
+    //filter by customer name
+    //filter by customerMobile number
+    //filter by only due
+    // filter by Date of sale Start date && end Date
+
+    const regexNumber = /^\d+$/;
+
+    if (filterByCustomer && regexNumber.test(filterByCustomer)) {
+      filterObject.customerContactNo = {
+        $regex: filterByCustomer,
+        $options: "i",
+      };
+    } else if (filterByCustomer) {
+      filterObject.customerName = {
+        $regex: filterByCustomer,
+        $options: "i",
+      };
     }
 
-    if (filterByDateOfSale) {
-      filterObject.dateOfSale = filterByDateOfSale;
+    if (filterByStartDate && filterByEndDate) {
+      filterObject.dateOfSale = {
+        $gte: parseInt(filterByStartDate),
+        $lte: parseInt(filterByEndDate),
+      };
     }
 
     if (filterByCreditAmount) {
-      filterObject.cerditAmount = filterByCreditAmount;
+      filterObject.cerditAmount = { gt: 0 };
+    }
+
+    if (filterByInvoiceNumber) {
+      filterObject.billNumber = filterByInvoiceNumber;
     }
 
     const { count, error, result } = await saleRepository.getAllSale(
@@ -489,6 +514,7 @@ router.post("/", async (req, res) => {
 
     const promises = products.map(async (e) => {
       const { productId, quantity, sellingPrice } = e;
+      discountedAmount = 0;
       if (productId.trim()) {
         const { count, result } = await productRepository.getSingleProduct(
           productId
