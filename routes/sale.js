@@ -282,7 +282,7 @@ router.get("/", async (req, res) => {
     }
 
     if (filterByCreditAmount) {
-      filterObject.cerditAmount = { gt: 0 };
+      filterObject.cerditAmount = { $gt: 0 };
     }
 
     if (filterByInvoiceNumber) {
