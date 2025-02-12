@@ -526,7 +526,7 @@ router.post("/", async (req, res) => {
 
     const promises = products.map(async (e) => {
       const { productId, quantity, sellingPrice } = e;
-      discountedAmount = 0;
+      // discountedAmount = 0;
       if (productId.trim()) {
         const { count, result } = await productRepository.getSingleProduct(
           productId

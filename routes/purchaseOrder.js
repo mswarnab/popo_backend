@@ -16,13 +16,13 @@ const validateReqBodyPurchaseOrder = require("../static/validation/validatePurch
 router.get("/", async (req, res) => {
   try {
     const {
-      startDate,
-      endDate,
-      sortByDateOfPurchase = -1,
-      sortByGrandTotal,
+      filterByStartDate,
+      filterByEndDate,
+      sortByDate = -1,
+      sortByGrandTotalAmount,
       filterByInvoiceNumber,
       filterBySupplierName,
-      filterByOnlyDue,
+      filterByCreditAmount,
       filterBySuplierId,
       filterByGrandTotalLte,
       filterByGrandTotalGte,
@@ -33,12 +33,20 @@ router.get("/", async (req, res) => {
     let sortObject = {};
     let filterObject = {};
 
-    if (sortByDateOfPurchase) {
-      sortObject.dateOfPruchase = sortByDateOfPurchase;
+    if (sortByDate) {
+      if (sortByDate == "ASC") {
+        sortObject.dateOfPruchase = 1;
+      } else if (sortByDate == "DESC") {
+        sortObject.dateOfPruchase = -1;
+      }
     }
 
-    if (sortByGrandTotal) {
-      sortObject.grandTotalAmount = sortByGrandTotal;
+    if (sortByGrandTotalAmount) {
+      if (sortByGrandTotalAmount == "ASC") {
+        sortObject.grandTotalAmount = 1;
+      } else if (sortByGrandTotalAmount == "DESC") {
+        sortObject.grandTotalAmount = -1;
+      }
     }
 
     if (filterByInvoiceNumber) {
@@ -51,9 +59,9 @@ router.get("/", async (req, res) => {
         $options: "i",
       };
     }
-    if (filterByOnlyDue) {
+    if (filterByCreditAmount) {
       filterObject.cerditAmount = {
-        $gte: filterByOnlyDue,
+        $gt: 0,
       };
     }
 
