@@ -220,6 +220,14 @@ router.get("/", async (req, res) => {
     let filterObject = {};
     const regexNumber = /^\d+$/;
 
+    if (sortByCreditAmount) {
+      if (sortByCreditAmount == "ASC") {
+        sortObject.totalCreditAmount = 1;
+      } else if (sortByCreditAmount) {
+        sortObject.totalCreditAmount = -1;
+      }
+    }
+
     if (filterBySupplier && regexNumber.test(filterBySupplier)) {
       filterObject.supplierContactNo = {
         $regex: filterBySupplier,

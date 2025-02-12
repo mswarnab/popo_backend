@@ -49,6 +49,14 @@ router.get("/", async (req, res) => {
       }
     }
 
+    if (sortByCreditAmount) {
+      if (sortByCreditAmount == "ASC") {
+        sortObject.cerditAmount = 1;
+      } else if (sortByCreditAmount) {
+        sortObject.cerditAmount = -1;
+      }
+    }
+
     if (filterByInvoiceNumber) {
       filterObject.invoiceNumber = filterByInvoiceNumber;
     }
