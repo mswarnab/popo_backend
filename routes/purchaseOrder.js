@@ -65,27 +65,27 @@ router.get("/", async (req, res) => {
       };
     }
 
-    if (filterBySuplierId) {
-      filterObject.supplierId = filterBySuplierId;
-    }
+    // if (filterBySuplierId) {
+    //   filterObject.supplierId = filterBySuplierId;
+    // }
 
-    if (filterByCreditAmountGte && filterByCreditAmountLte) {
-      filterObject.cerditAmount = {
-        $gte: filterByCreditAmountGte,
-        $lte: filterByCreditAmountLte,
-      };
-    }
+    // if (filterByCreditAmountGte && filterByCreditAmountLte) {
+    //   filterObject.cerditAmount = {
+    //     $gte: filterByCreditAmountGte,
+    //     $lte: filterByCreditAmountLte,
+    //   };
+    // }
 
-    if (filterByGrandTotalGte && filterByGrandTotalLte) {
-      filterObject.grandTotalAmount = {
-        $gte: filterByGrandTotalGte,
-        $lte: filterByGrandTotalLte,
-      };
-    }
+    // if (filterByGrandTotalGte && filterByGrandTotalLte) {
+    //   filterObject.grandTotalAmount = {
+    //     $gte: filterByGrandTotalGte,
+    //     $lte: filterByGrandTotalLte,
+    //   };
+    // }
 
     const purchaseOrder = await purchaseOrderRepository.getAllPurchaseOrder(
-      startDate,
-      endDate,
+      filterByStartDate,
+      filterByEndDate,
       sortObject,
       filterObject,
       page
@@ -120,6 +120,7 @@ router.get("/", async (req, res) => {
         )
       );
   } catch (error) {
+    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(

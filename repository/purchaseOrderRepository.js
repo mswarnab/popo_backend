@@ -87,9 +87,7 @@ const getAllPurchaseOrder = async (
     const count = await PurchaseOrder.find({
       ...filterObj,
       dateOfPruchase: { $gt: startDate, $lt: endDate },
-    })
-      .sort(sortObject)
-      .countDocuments();
+    }).countDocuments();
     const result = await PurchaseOrder.find({
       ...filterObj,
       dateOfPruchase: { $gte: startDate, $lte: endDate },
