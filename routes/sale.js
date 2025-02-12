@@ -218,7 +218,7 @@ router.get("/", async (req, res) => {
   try {
     const {
       page,
-      sortByDateOfSale,
+      sortByDate,
       sortByGrandTotalAmount,
       sortByCreditAmount,
       filterByInvoiceNumber,
@@ -230,8 +230,12 @@ router.get("/", async (req, res) => {
 
     let sortObject = {};
     let filterObject = {};
-    if (sortByDateOfSale) {
-      sortObject.dateOfSale = parseInt(sortByDateOfSale);
+    if (sortByDate) {
+      if (sortByDate == "ASC") {
+        sortObject.dateOfSale = 1;
+      } else if (sortByDate == "DESC") {
+        sortObject.dateOfSale = -1;
+      }
     }
 
     if (sortByGrandTotalAmount) {
