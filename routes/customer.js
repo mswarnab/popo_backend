@@ -391,7 +391,7 @@ router.get("/", async (req, res) => {
     if (sortByCreditAmount) {
       if (sortByCreditAmount == "ASC") {
         sortObject.totalCreditAmount = 1;
-      } else if (sortByCreditAmount) {
+      } else if (sortByCreditAmount == "DESC") {
         sortObject.totalCreditAmount = -1;
       }
     }

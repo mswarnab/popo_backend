@@ -230,10 +230,7 @@ router.get("/", async (req, res) => {
     }
 
     if (filterBySupplier && regexNumber.test(filterBySupplier)) {
-      filterObject.supplierContactNo = {
-        $regex: filterBySupplier,
-        $options: "i",
-      };
+      filterObject.supplierContactNo = filterBySupplier;
     } else if (filterBySupplier) {
       filterObject.supplierName = {
         $regex: filterBySupplier,
