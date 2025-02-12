@@ -120,7 +120,6 @@ router.get("/", async (req, res) => {
         )
       );
   } catch (error) {
-    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
