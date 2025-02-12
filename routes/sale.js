@@ -239,11 +239,19 @@ router.get("/", async (req, res) => {
     }
 
     if (sortByGrandTotalAmount) {
-      sortObject.grandTotalAmount = parseInt(sortByGrandTotalAmount);
+      if (sortByGrandTotalAmount == "ASC") {
+        sortObject.grandTotalAmount = 1;
+      } else if (sortByGrandTotalAmount == "DESC") {
+        sortObject.grandTotalAmount = -1;
+      }
     }
 
     if (sortByCreditAmount) {
-      sortObject.creditAmount = parseInt(sortByCreditAmount);
+      if (sortByCreditAmount == "ASC") {
+        sortObject.creditAmount = 1;
+      } else if (sortByCreditAmount == "DESC") {
+        sortObject.creditAmount = -1;
+      }
     }
 
     //filter by invoice number
