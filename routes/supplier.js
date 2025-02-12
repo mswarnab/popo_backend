@@ -215,20 +215,37 @@ router.get("/creditamount", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { filterBySupplierName, filterByPhoneNumber, page } = req.query;
+    const { filterBySupplier, filterByCreditAmount, page } = req.query;
     let sortObject = {};
     let filterObject = {};
+    const regexNumber = /^\d+$/;
 
-    if (filterBySupplierName) {
+    if (filterBySupplier && regexNumber.test(filterBySupplier)) {
+      filterObject.supplierContactNo = {
+        $regex: filterBySupplier,
+        $options: "i",
+      };
+    } else if (filterBySupplier) {
       filterObject.supplierName = {
-        $regex: filterBySupplierName,
+        $regex: filterBySupplier,
         $options: "i",
       };
     }
 
-    if (filterByPhoneNumber) {
-      filterObject.supplierContactNo = filterByPhoneNumber;
+    if (filterByCreditAmount) {
+      filterObject.totalCreditAmount = { $gt: 0 };
     }
+
+    // if (filterBySupplierName) {
+    //   filterObject.supplierName = {
+    //     $regex: filterBySupplierName,
+    //     $options: "i",
+    //   };
+    // }
+
+    // if (filterByPhoneNumber) {
+    //   filterObject.supplierContactNo = filterByPhoneNumber;
+    // }
 
     const { count, error, result } = await supplierRepository.getAllSupplier(
       sortObject,

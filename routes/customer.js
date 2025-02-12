@@ -382,7 +382,7 @@ router.get("/creditamount", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { filterByCustomer, page } = req.query;
+    const { filterByCustomer, filterByCreditAmount, page } = req.query;
 
     let sortObject = {};
     let filterObject = {};
@@ -401,6 +401,9 @@ router.get("/", async (req, res) => {
       };
     }
 
+    if (filterByCreditAmount) {
+      filterObject.totalCreditAmount = { $gt: 0 };
+    }
     // if (filterByPhoneNumber) {
     //   filterObject.customerContactNo = {
     //     $regex: filterByPhoneNumber,
