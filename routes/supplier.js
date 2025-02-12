@@ -215,8 +215,12 @@ router.get("/creditamount", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { filterBySupplier, filterByCreditAmount, sortByCreditAmount, page } =
-      req.query;
+    const {
+      filterBySupplierName,
+      filterByCreditAmount,
+      sortByCreditAmount,
+      page,
+    } = req.query;
     let sortObject = {};
     let filterObject = {};
     const regexNumber = /^\d+$/;
@@ -229,11 +233,11 @@ router.get("/", async (req, res) => {
       }
     }
 
-    if (filterBySupplier && regexNumber.test(filterBySupplier)) {
-      filterObject.supplierContactNo = filterBySupplier;
-    } else if (filterBySupplier) {
+    if (filterBySupplierName && regexNumber.test(filterBySupplierName)) {
+      filterObject.supplierContactNo = filterBySupplierName;
+    } else if (filterBySupplierName) {
       filterObject.supplierName = {
-        $regex: filterBySupplier,
+        $regex: filterBySupplierName,
         $options: "i",
       };
     }
