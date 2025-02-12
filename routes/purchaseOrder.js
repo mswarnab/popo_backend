@@ -23,6 +23,7 @@ router.get("/", async (req, res) => {
       filterByInvoiceNumber,
       filterBySupplierName,
       filterByCreditAmount,
+      sortByCreditAmount,
       filterBySuplierId,
       filterByGrandTotalLte,
       filterByGrandTotalGte,
@@ -128,6 +129,7 @@ router.get("/", async (req, res) => {
         )
       );
   } catch (error) {
+    console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(

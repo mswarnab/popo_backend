@@ -215,7 +215,8 @@ router.get("/creditamount", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { filterBySupplier, filterByCreditAmount, page } = req.query;
+    const { filterBySupplier, filterByCreditAmount, sortByCreditAmount, page } =
+      req.query;
     let sortObject = {};
     let filterObject = {};
     const regexNumber = /^\d+$/;
