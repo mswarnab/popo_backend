@@ -527,6 +527,7 @@ router.post("/", async (req, res) => {
     const promises = products.map(async (e) => {
       const { productId, quantity, sellingPrice } = e;
       // discountedAmount = 0;
+      let discount = 0;
       if (productId.trim()) {
         const { count, result } = await productRepository.getSingleProduct(
           productId
@@ -541,8 +542,9 @@ router.post("/", async (req, res) => {
             return { error: true, result };
           } else {
             result.quantity -= parseInt(quantity);
-            discountedAmount +=
+            discount =
               (result.mrp - parseFloat(sellingPrice)) * parseInt(quantity);
+            discountedAmount += discount;
             grandTotalAmount +=
               parseFloat(sellingPrice) * parseInt(quantity) +
               parseFloat(cgst) +
@@ -554,7 +556,7 @@ router.post("/", async (req, res) => {
                   parseFloat(result.sgst) +
                   parseFloat(result.cgst))) *
                 parseInt(quantity);
-            e.discountedAmount = discountedAmount;
+            e.discountedAmount = parseFloat(discount).toFixed(2);
             soldProducts = [...soldProducts, e];
             return { error: false, result };
           }
