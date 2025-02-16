@@ -10,7 +10,7 @@ const { httpCodes } = require("../static");
 const ErrorObject = require("../static/classes/errorObject");
 const ResponseObject = require("../static/classes/ResponseObject");
 const validateReqBody = require("../static/validation/validateSale");
-const validateReqBodyCustomer = require("../static/validation/validateCustomer");
+// const validateReqBodyCustomer = require("../static/validation/validateCustomer");
 
 const Customer = require("../static/classes/customer");
 const dayjs = require("dayjs");
@@ -453,6 +453,7 @@ router.post("/", async (req, res) => {
       paidAmount,
       dueDate,
     } = req.body;
+    // console.log(req.body);
 
     let customerObject = undefined;
     let customerError = { error: false, message: "" };
@@ -463,11 +464,14 @@ router.post("/", async (req, res) => {
         message: "C1",
       };
     }
+
     if (customerId) {
-      customerObject = await customerRepository.getSingleCustomer(customerId)
-        .result;
+      customerObject = await customerRepository.getSingleCustomer(
+        customerId.toString()
+      );
       //fetch the customer Details
     }
+    customerObject = customerObject.result;
 
     if (!customerObject) {
       if (customerMobileNo) {
@@ -614,7 +618,7 @@ router.post("/", async (req, res) => {
 
     const sale = new Sale(
       billNumber,
-      customerObject?._id.toString() || dummyCustomerIdentifier,
+      customerObject?._id?.toString() || dummyCustomerIdentifier,
       customerObject?.customerContactNo || dummyMobileNumber,
       customerObject?.customerName || dummyCustomerIdentifier,
       dateOfSale,
@@ -917,6 +921,7 @@ router.delete("/:id", async (req, res) => {
         );
     }
 
+    // console.log(saleDetails);
     let customerObject = {};
     if (
       saleDetails.customerId != dummyCustomerIdentifier &&
@@ -925,6 +930,7 @@ router.delete("/:id", async (req, res) => {
       customerObject = await customerRepository.getSingleCustomer(
         saleDetails.customerId
       );
+      // console.log(customerObject.result);
       customerObject.result.totalCreditAmount = (
         parseFloat(customerObject.result.totalCreditAmount) -
         parseFloat(saleDetails.cerditAmount)

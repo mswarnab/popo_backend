@@ -38,8 +38,10 @@ const updateCustomer = async (id, customerObject) => {
 };
 
 const getSingleCustomer = async (id) => {
+  console.log("id", id);
   try {
     const result = await Customer.findById(id);
+    console.log("result", result);
     return { count: 1, result };
   } catch (error) {
     return { errorStatus: true, error };
