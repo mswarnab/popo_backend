@@ -471,7 +471,9 @@ router.post("/", async (req, res) => {
       );
       //fetch the customer Details
     }
-    customerObject = customerObject.result;
+    if (customerObject) {
+      customerObject = customerObject?.result;
+    }
 
     if (!customerObject) {
       if (customerMobileNo) {

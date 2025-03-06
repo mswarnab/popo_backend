@@ -37,7 +37,7 @@ const getSingleProduct = async (id) => {
   }
 };
 
-const getAllProducts = async (sortObject, filterObject, page) => {
+const getAllProducts = async (sortObject = {}, filterObject = {}, page) => {
   try {
     let count;
     let result;
