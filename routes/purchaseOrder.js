@@ -24,7 +24,7 @@ router.get("/", async (req, res) => {
       filterBySupplierName,
       filterByCreditAmount,
       sortByCreditAmount,
-      filterBySuplierId,
+      filterBySupplierId,
       filterByGrandTotalLte,
       filterByGrandTotalGte,
       filterByCreditAmountLte,
@@ -74,8 +74,8 @@ router.get("/", async (req, res) => {
       };
     }
 
-    if (filterBySuplierId) {
-      filterObject.supplierId = filterBySuplierId;
+    if (filterBySupplierId) {
+      filterObject.supplierId = filterBySupplierId;
     }
 
     // if (filterByCreditAmountGte && filterByCreditAmountLte) {
