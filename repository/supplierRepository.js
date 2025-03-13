@@ -51,7 +51,7 @@ const updateSupplier = async (id, supplierObject) => {
 const getSingleSupplier = async (id) => {
   try {
     const result = await Supplier.findById(id);
-    return { count: 1, result };
+    return { count: result ? 1 : 0, result };
   } catch (error) {
     return { errorStatus: true, error };
   }

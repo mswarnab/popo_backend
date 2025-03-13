@@ -20,7 +20,7 @@ const updatePayment = async (id, paymentObject) => {
 const getSinglePayment = async (id) => {
   try {
     const result = await Payment.findById(id);
-    return { count: 1, result };
+    return { count: result ? 1 : 0, result };
   } catch (error) {
     return { errorStatus: true, error };
   }

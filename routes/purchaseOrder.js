@@ -129,7 +129,7 @@ router.get("/", async (req, res) => {
         )
       );
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -508,7 +508,7 @@ router.post("/", async (req, res) => {
         )
       );
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -618,7 +618,7 @@ router.put("/:id", async (req, res) => {
       )
     );
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -748,7 +748,7 @@ router.delete("/:id", async (req, res) => {
         )
       );
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(

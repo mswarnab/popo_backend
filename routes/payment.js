@@ -295,10 +295,10 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:paymentId", async (req, res) => {
   try {
-    const { id } = req.params;
-    const { result } = await paymentRepository.getSinglePayment(id);
+    const { paymentId } = req.params;
+    const { result } = await paymentRepository.getSinglePayment(paymentId);
     if (!result) {
       return res
         .status(httpCodes.BAD_REQUEST)
@@ -315,23 +315,108 @@ router.delete("/:id", async (req, res) => {
         );
     }
 
+    const { paymentPartner, id } = result;
+
     if (paymentPartner == PP[0]) {
-      const customer = await customerRepository.getSingleCustomer(id);
+      const { count, result: customer } =
+        await customerRepository.getSingleCustomer(id);
+      if (!count) {
+        return res
+          .status(httpCodes.BAD_REQUEST)
+          .send(
+            new ErrorObject(
+              httpCodes.BAD_REQUEST,
+              "PA059",
+              "Customer not found.",
+              "payment",
+              req.url,
+              req.method,
+              id
+            )
+          );
+      }
       customer.totalCreditAmount = parseFloat(
         customer.totalCreditAmount + result.paidAmount
       ).toFixed(2);
-      await customerRepository.updateCustomer(id, customer);
+      const customerUpdated = await customerRepository.updateCustomer(
+        id,
+        customer
+      );
+      if (!customerUpdated) {
+        return res
+          .status(httpCodes.BAD_REQUEST)
+          .send(
+            new ErrorObject(
+              httpCodes.BAD_REQUEST,
+              "PA060",
+              "Customer update failed.",
+              "payment",
+              req.url,
+              req.method,
+              result
+            )
+          );
+      }
     }
 
     if (paymentPartner == PP[1]) {
-      const supplier = await supplierRepository.getSingleSupplier(id);
+      const { count, result: supplier } =
+        await supplierRepository.getSingleSupplier(id);
+      if (!count) {
+        return res
+          .status(httpCodes.BAD_REQUEST)
+          .send(
+            new ErrorObject(
+              httpCodes.BAD_REQUEST,
+              "PA061",
+              "Supplier not found.",
+              "payment",
+              req.url,
+              req.method,
+              id
+            )
+          );
+      }
       supplier.totalCreditAmount = parseFloat(
         supplier.totalCreditAmount + result.paidAmount
       ).toFixed(2);
-      await supplierRepository.updateSupplier(id, supplier);
+      const supplierUpdated = await supplierRepository.updateSupplier(
+        id,
+        supplier
+      );
+      if (!supplierUpdated) {
+        return res
+          .status(httpCodes.BAD_REQUEST)
+          .send(
+            new ErrorObject(
+              httpCodes.BAD_REQUEST,
+              "PA062",
+              "Supplier could not be updated.",
+              "payment",
+              req.url,
+              req.method,
+              result
+            )
+          );
+      }
     }
 
-    const deletedPayment = await paymentRepository.deletePayment(id);
+    const deletedPayment = await paymentRepository.deletePayment(paymentId);
+    if (!deletedPayment) {
+      return res
+        .status(httpCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "PA063",
+            "Something Went Wrong.",
+            "payment",
+            req.url,
+            req.method,
+            deletedPayment
+          )
+        );
+    }
 
     //Successful response
     return res
@@ -343,7 +428,7 @@ router.delete("/:id", async (req, res) => {
           "Payment deleted successfully.",
           "payment",
           req.url,
-          { count: 1, result }
+          { count: 1, deletedPayment }
         )
       );
   } catch (error) {
