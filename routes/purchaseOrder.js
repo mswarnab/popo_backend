@@ -18,7 +18,7 @@ router.get("/", async (req, res) => {
     const {
       filterByStartDate,
       filterByEndDate,
-      sortByDate = -1,
+      sortByDate = "DESC",
       sortByGrandTotalAmount,
       filterByInvoiceNumber,
       filterBySupplierName,
@@ -74,9 +74,9 @@ router.get("/", async (req, res) => {
       };
     }
 
-    // if (filterBySuplierId) {
-    //   filterObject.supplierId = filterBySuplierId;
-    // }
+    if (filterBySuplierId) {
+      filterObject.supplierId = filterBySuplierId;
+    }
 
     // if (filterByCreditAmountGte && filterByCreditAmountLte) {
     //   filterObject.cerditAmount = {

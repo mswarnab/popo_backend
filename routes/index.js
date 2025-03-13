@@ -4,6 +4,7 @@ const stockRouter = require("./stock");
 const supplierRouter = require("./supplier");
 const saleRouter = require("./sale");
 const authRouter = require("./auth");
+const paymentRouter = require("./payment");
 
 module.exports = {
   customerRouter,
@@ -12,4 +13,5 @@ module.exports = {
   supplierRouter,
   saleRouter,
   authRouter,
+  paymentRouter,
 };

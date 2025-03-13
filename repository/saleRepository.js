@@ -176,7 +176,7 @@ const getCustomerMonthlyBills = async (customerId, startDate, endDate) => {
       customerId,
       dateOfSale: { $gte: startDate, $lte: endDate },
       cerditAmount: { $gte: 1 },
-    });
+    }).sort({ dateOfSale: -1 });
 
     return { count, result };
   } catch (error) {
