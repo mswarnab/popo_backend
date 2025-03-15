@@ -102,7 +102,7 @@ router.get("/monthlybill/:customerId", async (req, res) => {
       )
     );
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -753,7 +753,6 @@ router.delete("/:id", async (req, res) => {
       id
     );
 
-    console.log(result2);
     if (result2.length) {
       return res
         .status(httpCodes.FORBIDDEN)
