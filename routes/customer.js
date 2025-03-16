@@ -46,14 +46,34 @@ router.get("/monthlybill/:customerId", async (req, res) => {
         );
     }
 
-    const currentDate = dayjs().format("YYYYMMDD");
-    // const monthStartingDate = currentDate.substring(0, 6) + "01";
-    const monthStartingDate = "00000000";
+    const monthStartDate = dayjs()
+      .subtract(1, "month")
+      .startOf("month")
+      .format("YYYYMMDD");
+
+    const monthEndDate = dayjs()
+      .subtract(1, "month")
+      .endOf("month")
+      .format("YYYYMMDD");
+    // console.log(monthStartDate, monthEndDate);
+    let tempInv = "";
+    const temp = customerData.result.customerName.split(" ");
+    if (temp.length) {
+      if (temp.length > 1) {
+        tempInv =
+          temp[0].substring(0, 2).toUpperCase() +
+          temp[1].substring(0, 2).toUpperCase();
+      } else {
+        tempInv = temp[0].substring(0, 4).toUpperCase();
+      }
+    }
+
+    const invoiceNumber = "TPS" + monthEndDate.substring(0, 6) + tempInv;
 
     const saleDetails = await saleRepository.getCustomerMonthlyBills(
       customerId,
-      monthStartingDate,
-      currentDate
+      monthStartDate,
+      monthEndDate
     );
 
     // console.log(currentDate, monthStartingDate, saleDetails);
@@ -97,6 +117,7 @@ router.get("/monthlybill/:customerId", async (req, res) => {
         req.url,
         {
           saleDetails,
+          invoiceNumber: invoiceNumber,
           customerDetails: customerData.result,
         }
       )
