@@ -543,6 +543,7 @@ router.post("/", async (req, res) => {
           result.rate + result.sgst + result.cgst
         ).toFixed(2);
         e.productName = result.productName;
+        e.mfrCode = result.mfrCode;
         if (count) {
           if (result.quantity < parseInt(quantity)) {
             return { error: true, result };

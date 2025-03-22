@@ -10,6 +10,7 @@ const saleSchema = new mongoose.Schema({
     {
       productId: String,
       productName: String,
+      mfrCode: String,
       purchasePriceWithGst: Number,
       mrp: Number,
       quantity: Number,

@@ -37,7 +37,20 @@ const getSingleProduct = async (id) => {
   }
 };
 
-const getAllProducts = async (sortObject = {}, filterObject = {}, page) => {
+const getProductByMFR = async (id) => {
+  try {
+    const result = await Product.find({ mfrCode: id });
+    return { count: result ? 1 : 0, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
+const getAllProducts = async (
+  sortObject = { dateOfPruchase: -1 },
+  filterObject = {},
+  page
+) => {
   try {
     let count;
     let result;
@@ -262,6 +275,7 @@ module.exports = {
   getAllProducts,
   getGroupProducts,
   getSingleProduct,
+  getProductByMFR,
   createProduct,
   createBulkProduct,
   updateProduct,

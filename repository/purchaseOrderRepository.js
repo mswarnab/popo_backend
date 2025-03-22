@@ -79,7 +79,7 @@ const getPurchaseOrderBasedOnInvoiceNumber = async (invoiceNumber) => {
 const getAllPurchaseOrder = async (
   startDate = "20000101",
   endDate = "30000101",
-  sortObject = {},
+  sortObject = { dateOfPruchase: -1 },
   filterObj = {},
   page
 ) => {

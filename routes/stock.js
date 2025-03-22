@@ -328,6 +328,54 @@ router.get("/findproductwithname", async (req, res) => {
   }
 });
 
+router.get("/productid/:mfr", async (req, res) => {
+  try {
+    const { mfr } = req.params;
+    const product = await productRepository.getProductByMFR(mfr);
+    if (!product.count) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "ST019",
+            "Stock not found.",
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Stock details fetched successfully.",
+          "stock",
+          req.url,
+          { count: product.count, result: product.result[0] }
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "ST020",
+          "Something Went Wrong - " + error.message,
+          "stock",
+          req.url,
+          req.method,
+          error
+        )
+      );
+  }
+});
+
 router.get("/", async (req, res) => {
   try {
     const {
@@ -342,6 +390,7 @@ router.get("/", async (req, res) => {
       filterByInvoiceNumber,
       filterByHsnCode,
       filterByProductName,
+      filterByMfrCode,
       page,
     } = req.query;
 
@@ -394,6 +443,9 @@ router.get("/", async (req, res) => {
       filterObject.productName = { $regex: filterByProductName, $options: "i" };
     }
 
+    if (filterByMfrCode) {
+      filterObject.mfrCode = filterByMfrCode;
+    }
     const { count, result } = await productRepository.getAllProducts(
       sortObject,
       filterObject,

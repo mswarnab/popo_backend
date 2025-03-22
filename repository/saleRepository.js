@@ -103,7 +103,7 @@ const getSingleSale = async (id) => {
 
 const getAllSale = async (
   page,
-  sortObject,
+  sortObject = { dateOfSale: -1 },
   filterObj = { totalAmount: { $gt: 0 } }
 ) => {
   try {
