@@ -12,7 +12,7 @@ const { httpCodes } = require("../static");
 const validateReqBodyProduct = require("../static/validation/validateProduct");
 const validateReqBodyPurchaseOrder = require("../static/validation/validatePurchaseOrder");
 
-router.get("/totalsale", async (req, res) => {
+router.get("/total", async (req, res) => {
   try {
     const { count, error, result, errorStatus } =
       await purchaseOrderRepository.getTotalPurchaseAmountInLastMonth();
