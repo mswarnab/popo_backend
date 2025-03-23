@@ -12,6 +12,56 @@ const { httpCodes } = require("../static");
 const validateReqBodyProduct = require("../static/validation/validateProduct");
 const validateReqBodyPurchaseOrder = require("../static/validation/validatePurchaseOrder");
 
+router.get("/totalsale", async (req, res) => {
+  try {
+    const { count, error, result, errorStatus } =
+      await purchaseOrderRepository.getTotalPurchaseAmountInLastMonth();
+
+    if (errorStatus) {
+      return res
+        .status(httpCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "PO054",
+            "Something went wrong.",
+            "purchase",
+            req.url,
+            req.method,
+            error
+          )
+        );
+    }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Purchase Order detail fetched successfully.",
+          "purchase",
+          req.url,
+          { count, result }
+        )
+      );
+  } catch (error) {
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "PO084",
+          "Something went wrong.",
+          "sale",
+          req.url,
+          req.method,
+          error
+        )
+      );
+  }
+});
+
 // Get All purchase Orders (Filters, sort)
 router.get("/", async (req, res) => {
   try {

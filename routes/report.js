@@ -9,6 +9,7 @@ const purchaseOrderRepository = require("../repository/purchaseOrderRepository")
 const paymentRepository = require("../repository/paymentRepository");
 const customerRepository = require("../repository/customerRepository");
 const supplierRepository = require("../repository/supplierRepository");
+const productRepository = require("../repository/productRepository");
 
 const { httpCodes } = require("../static");
 const dayjs = require("dayjs");
@@ -295,6 +296,15 @@ router.get("/", async (req, res) => {
     }
 
     //Opening Stock
+    //  Total Stock value now - Total Stock value sold - Total Stock Value purchased
+    const tempObject = await productRepository.getAllStockValue();
+    const stockValueNow = tempObject[0]?.purchasePriceWithGST;
+    const saleStockValue = await saleRepository.getAllSaleStockValue(
+      formattedStartDate,
+      formattedEndDate
+    );
+    console.log("sale:", stockValueNow);
+
     //Total Sale history
     //Total Purchase history
     //Total Expense History
@@ -302,6 +312,11 @@ router.get("/", async (req, res) => {
     //Total due for Supplier
     //Total due from Customer
     //Closing Stock
+    //  Current Stock value
+    //    Stock quantity (Available) * purchasePrice
+    //Profit/Loss
+    //  Total Sale Value - Total Stock value sold - Expense
+    //
 
     return res
       .status(httpCodes.OK)

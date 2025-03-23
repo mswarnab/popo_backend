@@ -227,12 +227,35 @@ const getTotalProfitBasedOnDuration = async (startDate, endDate) => {
   }
 };
 
+const getAllSaleStockValue = async (startDate, endDate) => {
+  try {
+    return await Sale.aggregate([
+      // Unwind the products array to work with each product individually
+      { $match: { dateOfSale: { $gte: startDate, $lte: endDate } } },
+      { $unwind: "$products" },
+
+      // Calculate the total purchase price by summing up the `purchasePriceWithGst` for all products
+      {
+        $group: {
+          _id: null,
+          totalPurchasePrice: { $sum: "$products.purchasePriceWithGst" },
+        },
+      },
+
+      // Optionally, you can add a sort stage or further filtering if needed
+    ]);
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
 module.exports = {
   getAllSale,
   getSingleSale,
   createSale,
   updateSale,
   deleteSale,
+  getAllSaleStockValue,
   getCustomerMonthlyBills,
   getTotalSaleOfCustomers,
   getSaleBasedOnCustomerId,

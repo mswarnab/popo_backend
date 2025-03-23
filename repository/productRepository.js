@@ -271,6 +271,38 @@ const getAllProductsBasedOnIdArray = async (productArray) => {
   }
 };
 
+const getAllStockValue = async () => {
+  try {
+    return await Product.aggregate([
+      {
+        $match: { quantity: { $gt: 0 } },
+      },
+      {
+        $project: {
+          purchasePriceWithGST: {
+            $add: ["$purchasePrice", "$sgst", "$cgst"],
+          },
+        },
+      },
+      // {
+      //   $project: {
+      //     purchasePriceWithGST1: {
+      //       $multiply: ["$purchasePriceWithGST", "$quantity"],
+      //     },
+      //   },
+      // },
+      {
+        $group: {
+          _id: null,
+          purchasePriceWithGST: { $sum: "$purchasePriceWithGST" },
+        },
+      },
+    ]);
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
 module.exports = {
   getAllProducts,
   getGroupProducts,
@@ -287,4 +319,5 @@ module.exports = {
   getSearchResultFull,
   getAllProductsOnPurchaseOrder,
   getAllProductsBasedOnIdArray,
+  getAllStockValue,
 };

@@ -76,6 +76,41 @@ const getPurchaseOrderBasedOnInvoiceNumber = async (invoiceNumber) => {
 //     }
 // }
 
+const getTotalPurchaseAmountInLastMonth = async (
+  startDate = new Date(),
+  endDate = new Date()
+) => {
+  try {
+    startDate.setMonth(startDate.getMonth() - 1);
+    const startDateFM = formatDate(startDate);
+    const endDateFM = formatDate(endDate);
+
+    const count = await PurchaseOrder.find({
+      dateOfPruchase: { $gte: startDateFM, $lte: endDateFM },
+    }).countDocuments();
+
+    const result = await Sale.aggregate([
+      {
+        $match: {
+          dateOfPruchase: {
+            $gte: startDateFM,
+            $lte: endDateFM,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalPurchase: { $sum: "$grandTotalAmount" },
+        },
+      },
+    ]);
+    return { count, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
 const getAllPurchaseOrder = async (
   startDate = "20000101",
   endDate = "30000101",
@@ -147,6 +182,7 @@ module.exports = {
   createPurchaseOrder,
   updatePurchaseOrder,
   deletePurchaseOrder,
+  getTotalPurchaseAmountInLastMonth,
   getPurchaseOrderBasedOnSupplierId,
   getPurchaseOrderBasedOnInvoiceNumber,
 };
