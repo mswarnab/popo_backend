@@ -6,7 +6,7 @@ const productSchema = new mongoose.Schema({
   supplierId: String,
   supplierName: String,
   purchaseOrderId: String,
-  mfrCode: String,
+  mfrCode: { type: String, required: true, unique: true },
   hsnCode: String,
   invoiceNumber: String,
   dateOfPruchase: String,
