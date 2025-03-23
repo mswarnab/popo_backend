@@ -1,3 +1,4 @@
+const { formatDate } = require("../static/functions/getDate");
 const PurchaseOrder = require("./schema/purchaseOrder");
 
 const createPurchaseOrder = async (PurchaseOrderObject) => {
@@ -89,7 +90,7 @@ const getTotalPurchaseAmountInLastMonth = async (
       dateOfPruchase: { $gte: startDateFM, $lte: endDateFM },
     }).countDocuments();
 
-    const result = await Sale.aggregate([
+    const result = await PurchaseOrder.aggregate([
       {
         $match: {
           dateOfPruchase: {

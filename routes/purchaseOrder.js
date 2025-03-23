@@ -16,6 +16,7 @@ router.get("/total", async (req, res) => {
   try {
     const { count, error, result, errorStatus } =
       await purchaseOrderRepository.getTotalPurchaseAmountInLastMonth();
+    // console.log(error);
 
     if (errorStatus) {
       return res
@@ -32,6 +33,8 @@ router.get("/total", async (req, res) => {
           )
         );
     }
+
+    result[0].totalPurchase = parseFloat(result[0].totalPurchase).toFixed(2);
 
     return res
       .status(httpCodes.OK)
