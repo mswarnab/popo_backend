@@ -18,6 +18,7 @@ module.exports = {
     SUPPLIER: "/supplier",
     PAYMENT: "/payment",
     EXPENSE: "/expense",
+    REPORT: "/report",
   },
   paymentPartner: ["CUSTOMER", "SUPPLIER"],
 };

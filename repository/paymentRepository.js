@@ -32,8 +32,8 @@ const getAllPayment = async (sortObject, filterObject, page = 0) => {
 
     const result = await Payment.find(filterObject)
       .sort({ ...sortObject, paymentDate: -1 })
-      .skip(20 * parseFloat(page))
-      .limit(20);
+      .skip(page == "NA" ? 0 : 20 * parseFloat(page))
+      .limit(page == "NA" ? 99999 : 20);
     return { count, result };
   } catch (error) {
     return { errorStatus: true, error };

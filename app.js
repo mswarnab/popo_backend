@@ -11,6 +11,7 @@ const {
   authRouter,
   paymentRouter,
   expenseRouter,
+  reportRouter,
 } = require("./routes");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -50,6 +51,7 @@ app.use(routes.SALES, saleRouter);
 app.use(routes.SUPPLIER, supplierRouter);
 app.use(routes.PAYMENT, paymentRouter);
 app.use(routes.EXPENSE, expenseRouter);
+app.use(routes.REPORT, reportRouter);
 
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Listening on port ${process.env.PORT}`);

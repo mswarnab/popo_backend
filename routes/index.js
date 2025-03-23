@@ -6,11 +6,13 @@ const saleRouter = require("./sale");
 const authRouter = require("./auth");
 const paymentRouter = require("./payment");
 const expenseRouter = require("./expense");
+const reportRouter = require("./report");
 
 module.exports = {
   customerRouter,
   purhaseOrderRouter,
   stockRouter,
+  reportRouter,
   supplierRouter,
   saleRouter,
   authRouter,

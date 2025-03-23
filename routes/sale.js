@@ -540,7 +540,7 @@ router.post("/", async (req, res) => {
         );
         e.mrp = parseFloat(result.mrp).toFixed(2);
         e.purchasePriceWithGst = parseFloat(
-          result.rate + result.sgst + result.cgst
+          result.purchasePrice + result.sgst + result.cgst
         ).toFixed(2);
         e.productName = result.productName;
         e.mfrCode = result.mfrCode;

@@ -107,12 +107,12 @@ const getAllSale = async (
   filterObj = { totalAmount: { $gt: 0 } }
 ) => {
   try {
-    const count = await Sale.find(filterObj).sort(sortObject).countDocuments();
+    const count = await Sale.find(filterObj).countDocuments();
 
     const result = await Sale.find(filterObj)
       .sort(sortObject)
-      .skip(20 * parseFloat(page))
-      .limit(20);
+      .skip(page == "NA" ? 0 : 20 * parseFloat(page))
+      .limit(page == "NA" ? 99999 : 20);
     return { count, result };
   } catch (error) {
     return { errorStatus: true, error };

@@ -86,15 +86,15 @@ const getAllPurchaseOrder = async (
   try {
     const count = await PurchaseOrder.find({
       ...filterObj,
-      dateOfPruchase: { $gt: startDate, $lt: endDate },
+      dateOfPruchase: { $gte: startDate, $lte: endDate },
     }).countDocuments();
     const result = await PurchaseOrder.find({
       ...filterObj,
       dateOfPruchase: { $gte: startDate, $lte: endDate },
     })
       .sort(sortObject)
-      .skip(20 * parseFloat(page))
-      .limit(20);
+      .skip(page == "NA" ? 0 : 20 * parseInt(page))
+      .limit(!isNaN(page) ? 20 : 999999);
     return { count, result };
   } catch (error) {
     return { errorStatus: true, error };
