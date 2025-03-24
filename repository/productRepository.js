@@ -277,24 +277,26 @@ const getAllStockValue = async () => {
       {
         $match: { quantity: { $gt: 0 } },
       },
+
       {
         $project: {
           purchasePriceWithGST: {
             $add: ["$purchasePrice", "$sgst", "$cgst"],
           },
+          quantity: 1,
         },
       },
-      // {
-      //   $project: {
-      //     purchasePriceWithGST1: {
-      //       $multiply: ["$purchasePriceWithGST", "$quantity"],
-      //     },
-      //   },
-      // },
+      {
+        $project: {
+          purchasePriceWithGST1: {
+            $multiply: ["$purchasePriceWithGST", "$quantity"],
+          },
+        },
+      },
       {
         $group: {
           _id: null,
-          purchasePriceWithGST: { $sum: "$purchasePriceWithGST" },
+          purchasePriceWithGST: { $sum: "$purchasePriceWithGST1" },
         },
       },
     ]);
