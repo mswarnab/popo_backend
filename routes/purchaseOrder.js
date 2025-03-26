@@ -692,6 +692,20 @@ router.put("/:id", async (req, res) => {
 //Delete all the stocks added for that purchase order
 
 router.delete("/:id", async (req, res) => {
+  return res
+    .status(httpCodes.FORBIDDEN)
+    .send(
+      new ErrorObject(
+        httpCodes.FORBIDDEN,
+        "PO093",
+        "FORBIDDEN - Deletion is blocked for now",
+        "purchaseOrder",
+        req.url,
+        req.method,
+        "error"
+      )
+    );
+
   try {
     const { id } = req.params;
     const existingPurchaseOrder =
