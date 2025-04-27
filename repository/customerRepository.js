@@ -63,7 +63,7 @@ const getAllCustomer = async (sortObject, filterObject, page = 0) => {
     const count = await Customer.find(filterObject).countDocuments();
 
     const result = await Customer.find(filterObject)
-      .sort({ ...sortObject, lastPurchaseDate: -1 })
+      .sort({ ...sortObject })
       .skip(20 * parseFloat(page))
       .limit(20);
     return { count, result };
