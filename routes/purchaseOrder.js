@@ -11,6 +11,20 @@ const ResponseObject = require("../static/classes/ResponseObject");
 const { httpCodes } = require("../static");
 const validateReqBodyProduct = require("../static/validation/validateProduct");
 const validateReqBodyPurchaseOrder = require("../static/validation/validatePurchaseOrder");
+// const product = require("../repository/schema/product");
+
+// router.get("/migrate/:id", async (req, res) => {
+//   try {
+//     const products = await product.deleteMany({
+//       mfrCode: { $exists: true, $not: { $regex: "^.{5,}$" } },
+//     });
+//     console.log(products);
+
+//     return res.status(200).send({ products });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// });
 
 router.get("/total", async (req, res) => {
   try {
@@ -491,9 +505,11 @@ router.post("/", async (req, res) => {
       purchaseOrder.cgst =
         parseFloat(existingPurchaseOrderDetails.result[0].cgst) +
         parseFloat(purchaseOrder.cgst);
+
       purchaseOrder.grandTotalAmount =
         parseFloat(existingPurchaseOrderDetails.result[0].grandTotalAmount) +
-        parseFloat(purchaseOrder.grandTotalAmount);
+        parseFloat(grandTotalAmount);
+
       purchaseOrder.cerditAmount =
         parseFloat(existingPurchaseOrderDetails.result[0].cerditAmount) +
         parseFloat(purchaseOrder.cerditAmount);

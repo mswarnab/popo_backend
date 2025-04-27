@@ -15,6 +15,40 @@ const validateReqBody = require("../static/validation/validateSale");
 const Customer = require("../static/classes/customer");
 const dayjs = require("dayjs");
 
+// router.get("/temp/:id", async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     console.log(id);
+
+//     const saleArray = await saleRepository.getAllSale(
+//       0,
+//       {},
+//       { customerId: id }
+//     );
+
+//     let customerName = "";
+//     let totalDueAmount = 0;
+
+//     let billArray = [];
+//     saleArray.result.map((e) => {
+//       customerName = e.customerName;
+//       totalDueAmount += parseFloat(e.cerditAmount);
+//       billArray = [
+//         ...billArray,
+//         {
+//           billNumber: e.billNumber,
+//           customerName: e.customerName,
+//           dateSale: e.dateOfSale,
+//           dueAmount: e.cerditAmount,
+//         },
+//       ];
+//     });
+//     res.send({ customerName, totalDueAmount, saleBills: billArray });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// });
+
 router.get("/weeklysale", async (req, res) => {
   try {
     const { count, error, result, errorStatus } =
