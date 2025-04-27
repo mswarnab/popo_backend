@@ -71,7 +71,7 @@ router.get("/monthlybill/:customerId", async (req, res) => {
       }
     }
 
-    const invoiceNumber = "TPS" + monthEndDate.substring(0, 6) + tempInv;
+    const invoiceNumber = "TPS/" + monthEndDate.substring(0, 6) + "/" + tempInv;
 
     const saleDetails = await saleRepository.getCustomerMonthlyBills(
       customerId,
