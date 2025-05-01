@@ -50,7 +50,7 @@ router.get("/monthlybill/:customerId", async (req, res) => {
 
     const monthEndDate = dayjs().format("YYYYMMDD");
 
-    if (monthEndDate <= 15) {
+    if (monthEndDate.substring(6) <= 15) {
       monthStartDate = dayjs()
         .subtract(1, "month")
         .startOf("month")
@@ -58,7 +58,7 @@ router.get("/monthlybill/:customerId", async (req, res) => {
     } else {
       monthStartDate = dayjs().startOf("month").format("YYYYMMDD");
     }
-    // console.log(monthStartDate, monthEndDate);
+    // console.log(monthStartDate, monthEndDate.substring(6));
     let tempInv = "";
     const temp = customerData.result.customerName.split(" ");
     if (temp.length) {
