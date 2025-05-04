@@ -15,6 +15,133 @@ const validateReqBody = require("../static/validation/validateSale");
 const Customer = require("../static/classes/customer");
 const dayjs = require("dayjs");
 
+router.get("/status", async (req, res) => {
+  try {
+    const {
+      page,
+      sortByDate,
+      sortByGrandTotalAmount,
+      sortByCreditAmount,
+      filterByInvoiceNumber,
+      filterByCustomer,
+      filterByStartDate,
+      filterByEndDate,
+      filterByCreditAmount,
+    } = req.query;
+
+    let sortObject = {};
+    let filterObject = {};
+    if (sortByDate) {
+      if (sortByDate == "ASC") {
+        sortObject.dateOfSale = 1;
+      } else if (sortByDate == "DESC") {
+        sortObject.dateOfSale = -1;
+      }
+    }
+
+    if (sortByGrandTotalAmount) {
+      if (sortByGrandTotalAmount == "ASC") {
+        sortObject.grandTotalAmount = 1;
+      } else if (sortByGrandTotalAmount == "DESC") {
+        sortObject.grandTotalAmount = -1;
+      }
+    }
+
+    if (sortByCreditAmount) {
+      if (sortByCreditAmount == "ASC") {
+        sortObject.cerditAmount = 1;
+      } else if (sortByCreditAmount == "DESC") {
+        sortObject.cerditAmount = -1;
+      }
+    }
+
+    //filter by invoice number
+    //filter by customer name
+    //filter by customerMobile number
+    //filter by only due
+    // filter by Date of sale Start date && end Date
+
+    const regexNumber = /^\d+$/;
+
+    if (filterByCustomer && regexNumber.test(filterByCustomer)) {
+      filterObject.customerContactNo = {
+        $regex: filterByCustomer,
+        $options: "i",
+      };
+    } else if (filterByCustomer) {
+      filterObject.customerName = {
+        $regex: filterByCustomer,
+        $options: "i",
+      };
+    }
+
+    if (filterByStartDate && filterByEndDate) {
+      filterObject.dateOfSale = {
+        $gte: parseInt(filterByStartDate).toString(),
+        $lte: parseInt(filterByEndDate).toString(),
+      };
+    }
+
+    if (filterByCreditAmount) {
+      filterObject.cerditAmount = { $gt: 0 };
+    }
+
+    if (filterByInvoiceNumber) {
+      filterObject.billNumber = filterByInvoiceNumber;
+    }
+
+    const { count, error, result } = await saleRepository.getSaleStatus(
+      page,
+      sortObject,
+      filterObject
+    );
+
+    if (!count) {
+      return res
+        .status(httpCodes.NOT_FOUND)
+        .send(
+          new ErrorObject(
+            httpCodes.NOT_FOUND,
+            "SA001",
+            "Sale invoice not found.",
+            "sale",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    return res
+      .status(httpCodes.OK)
+      .send(
+        new ResponseObject(
+          httpCodes.OK,
+          req.method,
+          "Sale details fetched successfully.",
+          "sale",
+          req.url,
+          { count, result }
+        )
+      );
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(httpCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        new ErrorObject(
+          httpCodes.INTERNAL_SERVER_ERROR,
+          "SA002",
+          "Something went wrong.",
+          "sale",
+          req.url,
+          req.method,
+          error
+        )
+      );
+  }
+});
+
 // router.get("/temp/:id", async (req, res) => {
 //   try {
 //     const { id } = req.params;
@@ -248,6 +375,7 @@ router.get("/profit", async (req, res) => {
       );
   }
 });
+
 router.get("/", async (req, res) => {
   try {
     const {

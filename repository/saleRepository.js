@@ -119,6 +119,38 @@ const getAllSale = async (
   }
 };
 
+const getSaleStatus = async (
+  page,
+  sortObject = { dateOfSale: -1 },
+  filterObj = { totalAmount: { $gt: 0 } }
+) => {
+  try {
+    // const count = await Sale.find(filterObj).countDocuments();
+
+    // const result = await Sale.find(filterObj);
+    // console.log(filterObj);
+    const result = await Sale.aggregate([
+      {
+        // $match: { dateOfSale: { $gte: "20240504", $lte: "20250504" } },
+        $match: { ...filterObj },
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$grandTotalAmount" },
+          totalPaid: { $sum: "$paidAmount" },
+          totalDue: { $sum: "$cerditAmount" },
+          totalProfit: { $sum: "$totalProfit" },
+        },
+      },
+    ]);
+    // console.log(result);
+    return { count: result.length ? 1 : 0, result };
+  } catch (error) {
+    return { errorStatus: true, error };
+  }
+};
+
 const getTotalSaleOfCustomers = async (id, page, filterDue) => {
   try {
     if (filterDue) {
@@ -255,6 +287,7 @@ module.exports = {
   createSale,
   updateSale,
   deleteSale,
+  getSaleStatus,
   getAllSaleStockValue,
   getCustomerMonthlyBills,
   getTotalSaleOfCustomers,
