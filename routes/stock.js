@@ -736,7 +736,7 @@ router.put("/:id", async (req, res) => {
     let updatedTotalAmount = purchaseOrder.grandTotalAmount;
     let updatedCreditAmount = purchaseOrder.cerditAmount;
     let updatedAmount = purchaseOrder.totalAmount;
-    console.log(updatedCreditAmount);
+    // console.log(updatedCreditAmount);
 
     if (
       quantity != oldProduct.quantity ||
@@ -878,6 +878,40 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    const oldProduct = await productRepository.getSingleProduct(id);
+
+    if (oldProduct.errorStatus) {
+      return res.status(
+        httpCodes.INTERNAL_SERVER_ERROR.send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "ST024",
+            "Product does not exist",
+            "stock",
+            req.url,
+            req.method,
+            error
+          )
+        )
+      );
+    }
+
+    if (oldProduct?.result?.purchaseQuantity != oldProduct?.result?.quantity) {
+      return res.status(
+        httpCodes.INTERNAL_SERVER_ERROR.send(
+          new ErrorObject(
+            httpCodes.INTERNAL_SERVER_ERROR,
+            "ST025",
+            "Product already sold",
+            "stock",
+            req.url,
+            req.method,
+            error
+          )
+        )
+      );
+    }
+
     const product = await productRepository.deleteProduct(id);
     return res
       .status(httpCodes.OK)
