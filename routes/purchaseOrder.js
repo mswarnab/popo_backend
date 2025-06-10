@@ -452,7 +452,9 @@ router.post("/", async (req, res) => {
           )
         );
     }
-    const creditAmount = grandTotalAmount - parseFloat(paidAmount);
+    const creditAmount = parseFloat(finalAmount)
+      ? parseFloat(finalAmount) - parseFloat(paidAmount)
+      : grandTotalAmount - parseFloat(paidAmount);
     const purchaseOrder = new PurchaseOrder(
       invoiceNumber,
       supplierId,
@@ -468,11 +470,13 @@ router.post("/", async (req, res) => {
       dueDate,
       addLessAmount,
       crDrNote,
-      parseFloat(finalAmount),
+      parseFloat(finalAmount) || grandTotalAmount,
       0
     );
 
     const errorPurchaseOrder = validateReqBodyPurchaseOrder(purchaseOrder);
+
+    // console.log(errorPurchaseOrder.value);
 
     if (!errorPurchaseOrder.value) {
       return res
@@ -493,6 +497,7 @@ router.post("/", async (req, res) => {
 
     let purchaseOrderDetails;
     if (existingPurchaseOrderDetails.result.length) {
+      // console.log("in");
       purchaseOrder.totalAmount =
         parseFloat(existingPurchaseOrderDetails.result[0].totalAmount) +
         parseFloat(purchaseOrder.totalAmount);
@@ -506,9 +511,11 @@ router.post("/", async (req, res) => {
         parseFloat(existingPurchaseOrderDetails.result[0].cgst) +
         parseFloat(purchaseOrder.cgst);
 
-      purchaseOrder.grandTotalAmount =
-        parseFloat(existingPurchaseOrderDetails.result[0].grandTotalAmount) +
-        parseFloat(grandTotalAmount);
+      purchaseOrder.grandTotalAmount = parseFloat(finalAmount)
+        ? parseFloat(existingPurchaseOrderDetails.result[0].grandTotalAmount) +
+          parseFloat(finalAmount)
+        : parseFloat(existingPurchaseOrderDetails.result[0].grandTotalAmount) +
+          parseFloat(grandTotalAmount);
 
       purchaseOrder.cerditAmount =
         parseFloat(existingPurchaseOrderDetails.result[0].cerditAmount) +
@@ -526,6 +533,8 @@ router.post("/", async (req, res) => {
         purchaseOrder
       );
     }
+
+    // console.log(purchaseOrder);
 
     if (!purchaseOrderDetails || purchaseOrderDetails.errorStatus) {
       return res

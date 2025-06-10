@@ -2,6 +2,8 @@ const router = require("express").Router();
 const { httpCodes, productCategory } = require("../static");
 
 const productRepository = require("../repository/productRepository");
+const purchaseOrderRepository = require("../repository/purchaseOrderRepository");
+
 const ResponseObject = require("../static/classes/ResponseObject");
 const ErrorObject = require("../static/classes/errorObject");
 const Product = require("../static/classes/product");
@@ -480,7 +482,7 @@ router.get("/", async (req, res) => {
         )
       );
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res
       .status(httpCodes.INTERNAL_SERVER_ERROR)
       .send(
@@ -564,53 +566,157 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Fetch the purchase order ID
+    // Check if quantity,
     const {
       productName,
       category,
+      supplierId,
       supplierName,
+      purchaseOrderId,
+      mfrCode,
+      hsnCode,
       invoiceNumber,
       dateOfPruchase,
       mfgDate,
       expDate,
+      purchaseQuantity,
       quantity,
       rate,
       sgst,
       cgst,
+      discount,
+      purchasePrice,
       mrp,
       batchNumber,
-      discount,
       schemeDiscount,
-      purchasePrice,
-      purchaseOrderId,
       __v,
     } = req.body;
+
+    // Fetch old product
+    const oldProductResult = await productRepository.getSingleProduct(id);
+    if (oldProductResult?.errorStatus) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "ST062",
+            "Product not found - " + id,
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    const oldProduct = oldProductResult?.result;
+
+    if (oldProduct.mfrCode != mfrCode) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "ST061",
+            "MFR code does not match - " + mfrCode,
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    if (oldProduct.productName != productName) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "ST060",
+            "Product Name can't be changed - " + productName,
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    if (
+      oldProduct.purchaseQuantity != oldProduct.quantity &&
+      quantity < oldProduct.quantity
+    ) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "ST063",
+            oldProduct.quantity + "Quantity already sold. ",
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    // Fetch purchase order
+    const purchaseOrder = await purchaseOrderRepository.getSinglePurchaseOrder(
+      purchaseOrderId
+    );
+
+    if (!purchaseOrder || purchaseOrder?.errorStatus) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "ST062",
+            "Purchase invoice not found - " + invoiceNumber,
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    let productObject = undefined;
+    let purchaseOrderObject = undefined;
+
+    //Validate new product
     const product = new Product(
       productName,
       category,
       supplierId,
       supplierName,
       purchaseOrderId,
+      mfrCode,
+      hsnCode,
       invoiceNumber,
       dateOfPruchase,
       mfgDate,
       expDate,
-      quantity.toString(),
-      quantity.toString(),
-      rate.toString(),
-      sgst.toString(),
-      cgst.toString(),
-      mrp.toString(),
+      purchaseQuantity,
+      quantity,
+      rate,
+      sgst,
+      cgst,
+      mrp,
       batchNumber,
       purchasePrice,
-      discount.toString(),
-      schemeDiscount.toString(),
-      __v.toString()
+      discount,
+      schemeDiscount,
+      __v
     );
 
-    // Validate request body
     const { error, value, warning } = validateReqBody(product);
 
-    // If there is error in request body, then it will throw BAD request
     if (error) {
       return res
         .status(httpCodes.BAD_REQUEST)
@@ -627,11 +733,118 @@ router.put("/:id", async (req, res) => {
         );
     }
 
-    product.__v += 1;
+    let updatedTotalAmount = purchaseOrder.grandTotalAmount;
+    let updatedCreditAmount = purchaseOrder.cerditAmount;
+    let updatedAmount = purchaseOrder.totalAmount;
+    console.log(updatedCreditAmount);
 
-    //otherwise create product Repository is invoked.
-    const productObject = await productRepository.updateProduct(id, product);
+    if (
+      quantity != oldProduct.quantity ||
+      rate != oldProduct.rate ||
+      cgst != oldProduct.cgst ||
+      sgst != oldProduct.sgst ||
+      discount != oldProduct.discount ||
+      schemeDiscount != oldProduct.schemeDiscount
+    ) {
+      const { grandTotalAmount } = purchaseOrder;
 
+      //Subtract old product total from the purchase order total
+      let oldGrandTotal =
+        (parseFloat(oldProduct?.purchasePrice) +
+          parseFloat(oldProduct?.sgst) +
+          parseFloat(oldProduct?.cgst)) *
+        oldProduct.purchaseQuantity;
+      updatedTotalAmount = parseFloat(grandTotalAmount) - oldGrandTotal;
+
+      //Calculate new product total from the purchase order total
+
+      let newPurchasePrice = parseFloat(rate);
+      if (discount) {
+        newPurchasePrice = newPurchasePrice * (1 - parseFloat(discount) / 100);
+      }
+
+      if (schemeDiscount) {
+        newPurchasePrice =
+          newPurchasePrice * (1 - parseFloat(schemeDiscount) / 100);
+      }
+
+      product.purchasePrice = newPurchasePrice;
+
+      product.quantity =
+        parseInt(quantity) -
+        (parseInt(oldProduct.purchaseQuantity) - parseInt(oldProduct.quantity));
+
+      product.purchaseQuantity = parseInt(quantity);
+
+      product.__v += 1;
+
+      updatedAmount =
+        parseFloat(updatedAmount) -
+        parseFloat(oldProduct.purchasePrice) *
+          parseInt(oldProduct.purchaseQuantity);
+
+      updatedAmount =
+        parseFloat(updatedAmount) + newPurchasePrice * parseInt(quantity);
+
+      updatedTotalAmount =
+        updatedTotalAmount +
+        (newPurchasePrice + parseFloat(cgst) + parseFloat(sgst)) *
+          parseInt(quantity);
+
+      updatedCreditAmount =
+        parseFloat(updatedCreditAmount) -
+        parseFloat(purchaseOrder.grandTotalAmount);
+
+      updatedCreditAmount =
+        parseFloat(updatedCreditAmount) + parseFloat(updatedTotalAmount);
+    }
+
+    productObject = await productRepository.updateProduct(id, product);
+
+    if (!productObject || productObject?.errorStatus) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "ST064",
+            "Product not updated - " + productObject?.error,
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
+    // console.log(updatedAmount);
+    // console.log(updatedCreditAmount);
+    // console.log(updatedTotalAmount);
+
+    purchaseOrderObject = await purchaseOrderRepository.updatePurchaseOrder(
+      purchaseOrderId,
+      {
+        grandTotalAmount: updatedTotalAmount,
+        totalAmount: updatedAmount,
+        cerditAmount: updatedCreditAmount,
+      }
+    );
+
+    if (!purchaseOrderObject || purchaseOrderObject?.errorStatus) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "ST065",
+            "Purchase Order not updated - " + purchaseOrderObject?.error,
+            "stock",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
     //Successful response
     return res
       .status(httpCodes.OK)
@@ -642,7 +855,7 @@ router.put("/:id", async (req, res) => {
           "Stock details updated successfully.",
           "stock",
           req.url,
-          { count: 1, result: productObject }
+          { count: 1, productObject, purchaseOrderObject }
         )
       );
   } catch (error) {
