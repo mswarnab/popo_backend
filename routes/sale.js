@@ -783,6 +783,22 @@ router.post("/", async (req, res) => {
       }
     }
 
+    if (!dayjs(dateOfSale).isValid()) {
+      return res
+        .status(httpCodes.BAD_REQUEST)
+        .send(
+          new ErrorObject(
+            httpCodes.BAD_REQUEST,
+            "SA006",
+            "Invalid date provided.",
+            "sale",
+            req.url,
+            req.method,
+            null
+          )
+        );
+    }
+
     const sale = new Sale(
       billNumber,
       customerObject?._id?.toString() || dummyCustomerIdentifier,
