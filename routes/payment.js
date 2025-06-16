@@ -31,6 +31,8 @@ router.get("/", async (req, res) => {
       } else if (sortByDate == "DESC") {
         sortObject.paymentDate = -1;
       }
+    } else {
+      sortObject.paymentDate = -1; // Default sorting by date in descending order
     }
 
     if (sortByAmount) {

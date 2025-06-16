@@ -107,6 +107,8 @@ router.get("/", async (req, res) => {
       } else if (sortByDate == "DESC") {
         sortObject.dateOfPruchase = -1;
       }
+    } else {
+      sortObject.dateOfPruchase = -1;
     }
 
     if (sortByGrandTotalAmount) {

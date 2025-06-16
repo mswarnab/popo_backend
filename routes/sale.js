@@ -398,6 +398,8 @@ router.get("/", async (req, res) => {
       } else if (sortByDate == "DESC") {
         sortObject.dateOfSale = -1;
       }
+    } else {
+      sortObject.dateOfSale = -1;
     }
 
     if (sortByGrandTotalAmount) {

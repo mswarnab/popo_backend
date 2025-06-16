@@ -401,6 +401,8 @@ router.get("/", async (req, res) => {
 
     if (sortByDateOfPurchase) {
       sortObject.dateOfPurchase = parseFloat(sortByDateOfPurchase);
+    } else {
+      sortObject.dateOfPurchase = -1; // Default to descending order
     }
 
     if (sortByExpDate) {
@@ -648,7 +650,7 @@ router.put("/:id", async (req, res) => {
 
     if (
       oldProduct.purchaseQuantity != oldProduct.quantity &&
-      quantity < oldProduct.quantity
+      quantity < oldProduct.purchaseQuantity - oldProduct.quantity
     ) {
       return res
         .status(httpCodes.BAD_REQUEST)
