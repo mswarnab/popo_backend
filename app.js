@@ -28,7 +28,7 @@ const validateAuthorization = require("./middleware/auth");
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL3,
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
@@ -42,7 +42,7 @@ app.use(
 // );
 app.use(cookieParser());
 
-// app.use(validateAuthorization);
+app.use(validateAuthorization);
 app.use(routes.AUTH, authRouter);
 app.use(routes.STOCK, stockRouter);
 app.use(routes.CUSTOMER, customerRouter);
