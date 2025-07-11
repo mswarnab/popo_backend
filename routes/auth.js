@@ -94,7 +94,7 @@ router.post("/login", async (req, res) => {
           // Ensures the cookie is sent over HTTPS
           sameSite: "none", // Allow cross-site cookies
           path: "/", // Set the path to the same as when the cookie was set
-          domain: "popo-backend-1.onrender.com", // If the cookie was set with a specific domain, use it here
+          domain: "https://popo-backend.vercel.app", // If the cookie was set with a specific domain, use it here
         })
         .status(httpCodes.OK)
         .send(
